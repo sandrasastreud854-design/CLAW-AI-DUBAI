@@ -58,10 +58,10 @@ async def start_dummy_server():
 # КОНФИГ — те же значения что в server.py
 # ══════════════════════════════════════════════════════════
 
-SUPABASE_URL = "https://gtiqksoxcaotocalqfhe.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFrc294Y2FvdG9jYWxxZmhlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzY4ODczMiwiZXhwIjoyMTA5MjY0NzMyfQ.C_3U9s-tnDGNEEDVoUpaZVnqf8eQzmpxHr5CtIWJhvs"
+SUPABASE_URL = "https://cfystxxxafopwqpfdumw.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmeXN0eHh4YWZvcHdxcGZkdW13Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzcxNTIzMywiZXhwIjoyMTA5MjkxMjMzfQ.99zv4GQnhGNGe0pzR_MiaFtFJz7YEg1pTX0_fZc9kjc"
 
-TELEGRAM_BOT_TOKEN = "8743731775:AAE3jy3zZOTaM8rYXie7LHmgfXduV9IY06g"
+TELEGRAM_BOT_TOKEN = ""
 
 MIN_AGE = 30
 
