@@ -7261,11 +7261,7 @@ teamInviteBtn?.addEventListener(
 
 const PROXY_PLATFORMS = [
   { id: "mamba",       label: "Mamba / Love Mail" },
-  { id: "lovelaz",     label: "Lovelaz" },
   { id: "twinby",      label: "Twinby" },
-  { id: "vznakomstve", label: "Vznakomstve" },
-  { id: "badanga",     label: "BADANGA" },
-  { id: "soderzhanka", label: "Содержанка" },
 ];
 
 async function loadProxySettings() {
@@ -9559,11 +9555,8 @@ document.addEventListener("click", (e) => {
 // ══════════════════════════════════════════════════════════
 
 const PROMPT_PLATFORMS = [
-  { id: "lovelaz", label: "Lovelaz" },
-  { id: "twinby",  label: "Twinby"  },
   { id: "mamba",   label: "Mamba"   },
-  { id: "badanga", label: "BADANGA" },
-  { id: "soderzhanka", label: "Содержанка" },
+  { id: "twinby",  label: "Twinby"  },
 ];
 
 // Порядок блоков = порядок, в котором они склеиваются в промт для модели
@@ -10891,8 +10884,7 @@ function initChatPage() {
 })();
 
 // ── Реестр почт ───────────────────────────────────────────
-const ML_PLATFORMS = ["Mamba","Badanga","Soderzhanka","LovePlanet","Lovelaz",
-                      "Twinby","Vznakomstve"];
+const ML_PLATFORMS = ["Mamba","Twinby"];
 const ML_STATUSES = [["free","свободна"],["in_work","в работе"],
                      ["blocked","заблокирована"],["dead","мёртвая"]];
 const ML_COLORS = { free:"#64748b", in_work:"#10f5a8", blocked:"#fb7185", dead:"#f43f5e" };
