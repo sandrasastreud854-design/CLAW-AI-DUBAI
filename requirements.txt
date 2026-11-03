@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+httpx[socks]
+bcrypt
+supabase
+pydantic
+python-socketio[client]==5.11.2
+aiohttp
+curl_cffi
+playwright
+PySocks
+telethon
+python-multipart
+curl_cffi

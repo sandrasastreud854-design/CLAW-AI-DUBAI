@@ -1,0 +1,2487 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CLAW-AI MANAGER</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+    <link rel="stylesheet" href="./style.css" />
+    <style>
+    .page { display: none; }
+    .tmPerson { cursor: pointer; border-radius: 10px; }
+    .tmPerson:has(input:checked) { background: rgba(34,211,238,.07); }
+    .tmPerson input[type="radio"], .tmPerson input[type="checkbox"] { -webkit-appearance: none; appearance: none; flex: 0 0 auto; width: 20px !important; height: 20px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; border: 1.5px solid rgba(255,255,255,.28) !important; border-radius: 50% !important; background: transparent !important; box-shadow: none !important; cursor: pointer; }
+    .tmPerson input[type="checkbox"] { border-radius: 6px !important; }
+    .tmPerson input:checked { border-color: #22d3ee !important; background: radial-gradient(circle, #22d3ee 0 4px, rgba(34,211,238,.12) 5px) !important; box-shadow: 0 0 10px rgba(34,211,238,.4) !important; }
+    #tmCreateResult:empty { display: none; }
+    .tmPerson { cursor: pointer; border-radius: 10px; transition: background .15s; }
+    .tmPerson:has(input:checked) { background: rgba(34,211,238,.07); }
+    .tmPerson input[type="radio"],
+    .tmPerson input[type="checkbox"] {
+      -webkit-appearance: none; appearance: none;
+      flex: 0 0 auto; width: 20px !important; height: 20px !important;
+      min-width: 0 !important; padding: 0 !important; margin: 0 !important;
+      border: 1.5px solid rgba(255,255,255,.28) !important; border-radius: 50% !important;
+      background: transparent !important; box-shadow: none !important;
+      cursor: pointer; transition: all .15s;
+    }
+    .tmPerson input[type="checkbox"] { border-radius: 6px !important; }
+    .tmPerson input:hover { border-color: rgba(34,211,238,.6) !important; }
+    .tmPerson input[type="radio"]:checked {
+      border-color: #22d3ee !important;
+      background: radial-gradient(circle, #22d3ee 0 4px, rgba(34,211,238,.12) 5px) !important;
+      box-shadow: 0 0 10px rgba(34,211,238,.4) !important;
+    }
+    .tmPerson input[type="checkbox"]:checked {
+      border-color: #22d3ee !important;
+      background: rgba(34,211,238,.18) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%2322d3ee' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/14px no-repeat !important;
+      box-shadow: 0 0 10px rgba(34,211,238,.4) !important;
+    }
+    #tmCreateResult:empty { display: none; }
+    .tmTick { display: inline-flex; vertical-align: middle; margin-left: 5px; color: var(--text3, #6b7280); transition: color .2s; }
+    .tmTick.read { color: var(--cyan, #22d3ee); }
+    .page.activePage { display: block; }
+    #tablesPage.activePage { display: flex !important; flex-direction: column; }
+    #homePage.activePage { display: flex !important; flex-direction: column; } 
+    #canvasWrapper { flex: 1; min-height: 300px; }
+    #keysPanel.open { right: 0 !important; }
+    #keysPanelToggle:hover { padding-right: 15px; }
+    #notificationsBell { display: none !important; }
+    #keySlotForm.open { transform: translateX(0) !important; }
+
+    /* Выпадающие списки в форме подключения */
+    .connectSlot select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 100%;
+      padding: 10px 34px 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background-color: #08080b;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%239a9caa' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      color: #f4f5f8;
+      font: 500 13px 'Inter', sans-serif;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, background-color .15s;
+    }
+
+    .connectSlot select:hover {
+      border-color: rgba(255,255,255,0.28);
+      background-color: #0d0d12;
+    }
+
+    .connectSlot select:focus {
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.10);
+    }
+
+    /* Пункты списка — иначе Windows рисует их белыми */
+    .connectSlot select option {
+      background: #111116;
+      color: #f4f5f8;
+      padding: 8px;
+    }
+  </style>
+</head>
+  <body>
+
+    <!-- Экран входа / регистрации -->
+    <div class="authOverlay" id="authOverlay" style="display:flex;">
+      <div id="authLoadingScreen" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;background:var(--bg);">
+        <div style="font:700 13px 'Orbitron',sans-serif;color:var(--accent3);letter-spacing:0.1em;opacity:0.7;">ЗАГРУЗКА...</div>
+      </div>
+      <canvas id="authCanvas"></canvas>
+      <div class="authChatLayer" id="authChatLayer"></div>
+      <div class="authBox">
+        <div class="authLogo">
+          <img class="logoMark logoImg" src="/logo.png" alt="CLAW-AI" />
+          <div>
+            <b>CLAW-AI</b>
+            <span>Manager</span>
+          </div>
+        </div>
+
+        <div class="authTabs">
+          <button class="authTab active" id="authTabLogin">Вход</button>
+          <button class="authTab" id="authTabRegister">Регистрация</button>
+        </div>
+
+        <!-- Форма входа -->
+        <form class="authForm" id="loginForm">
+          <label>Email
+            <input type="email" id="loginEmail" placeholder="you@example.com" required />
+          </label>
+          <label>Пароль
+           <input type="password" id="loginPassword" placeholder="••••••••" required />
+          </label>
+          <label>Код доступа
+            <input type="text" id="loginAccessCode" placeholder="Уникальный код" required />
+          </label>
+          <button class="primary" type="submit" id="loginBtn">Войти</button>
+          <div class="authError" id="loginError"></div>
+        </form>
+
+        <!-- Форма регистрации -->
+        <form class="authForm" id="registerForm" style="display:none;">
+          <label>Имя
+            <input type="text" id="registerUsername" placeholder="Например: Иван" required />
+          </label>
+          <label>Email
+            <input type="email" id="registerEmail" placeholder="you@example.com" required />
+          </label>
+           <label>Пароль
+            <input type="password" id="registerPassword" placeholder="Минимум 6 символов" required />
+           </label>
+           <label>Код доступа
+             <input type="text" id="registerAccessCode" placeholder="Уникальный код" required />
+           </label>
+           <button class="primary" type="submit" id="registerBtn">Зарегистрироваться</button>
+           <div class="authError" id="registerError"></div>
+        </form>
+      </div>
+    </div>
+
+    <canvas id="bgCanvas"></canvas>
+    <div class="bgGlow"></div>
+
+
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="logoMark logoImg" src="/logo.png" alt="CLAW-AI" />
+        <b><i>CLAW</i>-AI</b>
+      </div>
+
+      <nav class="nav">
+        <div class="navGroup">Основное</div>
+        <button class="navBtn active" data-page="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Главная</button>
+        <button class="navBtn" data-page="plan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>Планирование</button>
+        <button class="navBtn" data-page="tasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.6A8.4 8.4 0 1 1 21 11.5z"/></svg>Чаты</button>
+        <button class="navBtn" data-page="schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M7.5 14h2M11 14h2M14.5 14h2M7.5 17.5h2M11 17.5h2"/></svg>График</button>
+        <div class="navGroup">Аналитика</div>
+        <button class="navBtn" data-page="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>Отчёт</button>
+        <button class="navBtn" data-page="tables"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>Таблица</button>
+        <button class="navBtn" data-page="mails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>Личный кабинет</button>
+        <button class="navBtn" data-page="contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg>Контакты</button>
+        <button class="navBtn" data-page="team" id="navTeamBtn" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>Команда</button>
+                <button class="navBtn" data-page="myTasks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 15l2 2 4-4"/></svg>МОИ TG<span id="myTgBadge" style="display:none;margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#fb7185;color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(251,113,133,.7);"></span></button>
+        <button class="navBtn" data-page="cabinet" id="navCabinetBtn" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 13h6"/></svg>Кабинет</button>
+        <button class="navBtn" data-page="training"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>Видео обучение</button>
+        <div class="navGroup">Система</div>
+        <button class="navBtn" data-page="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2"/></svg>Настройки</button>
+      </nav>
+
+      <style>
+        .tgToday{margin:10px 12px 0;padding:11px 12px;border-radius:12px;
+                 background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.18);}
+        .tgToday .ttHead{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+        .tgToday .ttTitle{font-size:10px;text-transform:uppercase;letter-spacing:.07em;
+                          color:var(--cyan);font-weight:700;}
+        .tgToday .ttCnt{margin-left:auto;font-size:10px;color:var(--text2);
+                        background:rgba(255,255,255,.07);padding:2px 7px;border-radius:999px;}
+        .tgToday .ttList{display:flex;flex-direction:column;gap:2px;}
+        .tgToday .ttItem{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;
+                         font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text);
+                         cursor:pointer;transition:background .12s;}
+        .tgToday .ttItem:hover{background:rgba(34,211,238,.12);}
+        .tgToday .ttItem.done{background:rgba(16,245,168,.14);color:var(--green);}
+        .tgToday .ttEmpty{font-size:11.5px;color:var(--text2);}
+        .tgToday .ttRow{display:flex;align-items:center;gap:6px;padding:4px 7px;border-radius:7px;
+                        cursor:pointer;transition:background .12s;}
+        .tgToday .ttRow:hover{background:rgba(34,211,238,.1);}
+        .tgToday .ttRow.done{background:rgba(16,245,168,.14);}
+        .tgToday .ttNick{flex:1;min-width:0;font-family:'JetBrains Mono',monospace;
+                         font-size:11px;color:var(--text);
+                         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .tgToday .ttRow.done .ttNick{color:var(--green);}
+        .tgToday .ttPlats{display:flex;gap:3px;flex:0 0 auto;}
+        .tgToday .ttP{font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 5px;
+                      border-radius:4px;background:rgba(255,255,255,.08);color:var(--text2);
+                      white-space:nowrap;text-transform:uppercase;}
+        .tgToday .ttP.ban{background:rgba(251,113,133,.18);color:#fb7185;}
+        .tgToday .ttNone{font-size:9px;color:rgba(255,255,255,.2);flex:0 0 auto;}
+      </style>
+      <div class="tgToday" id="tgToday" style="display:none;"></div>
+
+      <div class="userCard" id="userCardBtn" style="cursor:pointer;">
+        <div class="userAvatar">—</div>
+        <div>
+          <b>Аккаунт</b>
+          <span id="userCardEmail">admin account</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Модалка подтверждения удаления вкладки -->
+    <div class="modalBackdrop" id="deleteTabModal">
+      <div class="modal" style="max-width:340px;">
+        <div class="modalHead">
+          <span>Удаление вкладки</span>
+          <button class="modalClose" id="deleteTabModalClose">✕</button>
+        </div>
+        <div class="modalBody">
+          <p style="font:400 13px/1.6 'Space Grotesk',sans-serif;color:var(--text2);">
+            Удалить вкладку «<span id="deleteTabName" style="color:var(--text);font-weight:600;"></span>»? Анкеты внутри неё не удалятся, просто пропадёт метка.
+          </p>
+          <div style="display:flex;gap:8px;margin-top:18px;">
+            <button class="ghost" id="deleteTabCancelBtn" style="flex:1;">Отмена</button>
+            <button class="small danger" id="deleteTabConfirmBtn" style="flex:1;padding:10px;">Удалить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модалка удаления анкеты -->
+<div class="modalBackdrop" id="deleteAccountModal">
+  <div class="modal" style="max-width:340px;">
+    <div class="modalHead">
+      <span>Удаление анкеты</span>
+      <button class="modalClose" id="deleteAccountModalClose">✕</button>
+    </div>
+    <div class="modalBody">
+      <p style="font:400 13px/1.6 'Space Grotesk',sans-serif;color:var(--text2);">
+        Удалить анкету <span id="deleteAccountName" style="color:#fb7185;font-weight:600;"></span>? Это действие необратимо.
+      </p>
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button class="ghost" id="deleteAccountCancelBtn" style="flex:1;">Отмена</button>
+        <button class="small danger" id="deleteAccountConfirmBtn" style="flex:1;padding:10px;">Удалить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Модалка профиля -->
+    <div class="modalBackdrop" id="profileModal">
+      <div class="modal">
+        <div class="modalHead">
+          <span>Профиль</span>
+          <button class="modalClose" id="profileModalClose">✕</button>
+        </div>
+        <div class="modalBody">
+          <label>Email
+            <input id="profileEmail" disabled style="margin-top:6px;" />
+          </label>
+          <label style="margin-top:10px;">Имя пользователя
+            <input id="profileUsername" placeholder="Например: Иван" style="margin-top:6px;" />
+          </label>
+          <button class="taskRunBtn" id="profileChangeUsernameBtn" style="margin-top:10px;">Сохранить имя</button>
+          <div class="result" id="profileUsernameResult" style="margin-top:8px;"></div>
+          <label style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">Текущий пароль
+            <input type="password" id="profileCurrentPassword" placeholder="••••••••" style="margin-top:6px;" />
+          </label>
+          <label>Новый пароль
+            <input type="password" id="profileNewPassword" placeholder="Минимум 6 символов" style="margin-top:6px;" />
+          </label>
+          <button class="taskRunBtn" id="profileChangePasswordBtn" style="margin-top:16px;">Сменить пароль</button>
+          <div class="result" id="profileChangeResult" style="margin-top:10px;"></div>
+          <button class="small danger" id="profileLogoutBtn" style="margin-top:18px;width:100%;">Выйти из аккаунта</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="notificationsBell" style="
+    position:fixed;
+    top:18px;
+    right:24px;
+    z-index:999;
+    cursor:pointer;
+    font-size:22px;
+    ">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <span id="notificationsCount" style="
+      position:absolute;
+      top:-6px;
+      right:-10px;
+      background:#ef4444;
+      color:white;
+      font-size:10px;
+      border-radius:999px;
+      padding:2px 6px;
+      display:none;
+      ">
+        0
+      </span>
+    </div>
+
+    <main class="app" id="mainApp" style="display:none;">
+
+      <header class="topBar">
+        <div class="topBellWrap">
+          <button class="topIcon" id="topBell">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span class="topDot" id="topBellCount" style="display:none;">0</span>
+          </button>
+          <div class="bellPanel" id="bellPanel">
+            <div class="bellPanelHead">Уведомления</div>
+            <div class="bellPanelBody" id="bellPanelBody"></div>
+          </div>
+        </div>
+        <button class="topIcon" id="topSettings" title="Настройки">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+        <div class="datePill" style="padding:7px 12px;">RU</div>
+        <div class="topSearch">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input id="topSearchInput" placeholder="Поиск по анкетам..." />
+        </div>
+        <div class="topUser" id="topUserChip">
+          <div class="topAvatar" id="topAvatar">—</div>
+          <span>Привет, <b id="topUserName">Аккаунт</b></span>
+        </div>
+      </header>
+
+      <!-- ── ГЛАВНАЯ ── -->
+      <section class="page activePage" id="homePage" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+        <div class="pageHead">
+          <div>
+            <h1 id="greetTitle">Добро пожаловать!</h1>
+            <div class="crumb" id="greetCrumb">Главная / Mamba</div>
+          </div>
+          <div class="datePill" id="datePill">Сегодня</div>
+        </div>
+        <div class="kpiRow" id="kpiRow">
+          <div class="kpi light">
+            <div><div class="kpiVal">
+              <span id="kpiAccounts">0</span><span class="tag" id="kpiAccountsTag" style="display:none;"></span>
+            </div><div class="kpiLabel">Активных анкет</div></div>
+            <div class="kpiIcon i1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          </div>
+          <div class="kpi">
+            <div><div class="kpiVal">
+              <span id="kpiLikes">0</span><span class="tag" id="kpiLikesTag" style="display:none;"></span>
+            </div><div class="kpiLabel">Лайков за сутки</div></div>
+            <div class="kpiIcon i2"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg></div>
+          </div>
+          <div class="kpi">
+            <div><div class="kpiVal">
+              <span id="kpiReplies">0</span><span class="tag" id="kpiRepliesTag" style="display:none;"></span>
+            </div><div class="kpiLabel">Ответов AI</div></div>
+            <div class="kpiIcon i3"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.6A8.4 8.4 0 1 1 21 11.5z"/></svg></div>
+          </div>
+          <div class="kpi">
+            <div><div class="kpiVal">
+              <span id="kpiLeads">0</span><span class="tag" id="kpiLeadsTag" style="display:none;"></span>
+            </div><div class="kpiLabel">Лидов в работе</div></div>
+            <div class="kpiIcon i4"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          </div>
+        </div>
+        <div class="platformBtns" id="platformBtnsRow" style="position:relative;z-index:300;flex:0 0 auto;">
+          <button class="platformBtn active" data-platform="Mamba">Mamba</button>
+          <button class="platformBtn" data-platform="Twinby">Twinby</button>
+          <button class="platformBtn" data-platform="Vznakomstve">Взнакомстве</button>
+          <button class="platformBtn" data-platform="Lovelaz">Lovelaz</button>
+          <button class="platformBtn" data-platform="Badanga">Badanga</button>
+          <button class="platformBtn" data-platform="Soderzhanka">Содержанка</button>
+          <button class="platformBtn" data-platform="LovePlanet">LovePlanet</button>
+          <button class="platformBtn" data-platform="LoveRu">LOVE.RU</button>
+          <span id="tabsDivider" style="display:none;width:1px;height:20px;background:rgba(255,255,255,0.12);"></span>
+          <span id="operatorTabsContainer" style="display:flex;gap:8px;flex-wrap:wrap;"></span>
+          <button class="platformBtn" id="addTabBtn" title="Добавить вкладку" style="padding:8px 14px;border-style:dashed;color:var(--accent);">+ Вкладка</button>
+        </div>
+        <section class="homeLayout" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+
+          <!-- Форма подключения -->
+          <form class="panel connectPanel" id="connectForm" style="position:relative;z-index:10;">
+            <div class="panelHead connectToggle" id="connectToggle">
+              <h2>Подключить анкету</h2>
+              <span class="connectArrow">▼</span>
+            </div>
+            <div class="connectBody" id="connectBody" style="display:none;padding:18px 18px 20px;flex-direction:column;gap:0;">
+              <div id="connectSlots"></div>
+
+              <button type="button" class="secondary" id="addSlotBtn" style="margin:8px 0 14px;">+ Добавить ещё анкету</button>
+
+              <button class="primary" type="submit" id="connectBtn">Подключить и достать фото</button>
+              <p class="hint">Backend откроет профиль через Chromium, подставит cookies и попробует автоматически достать фото анкеты.</p>
+              <div class="result" id="resultBox">Готов к подключению.</div>
+            </div>
+
+            <template id="connectSlotTemplate">
+              <div class="connectSlot" style="border:1px solid var(--border2, rgba(255,255,255,.1));border-radius:10px;padding:14px;margin-bottom:14px;position:relative;">
+                <span class="slotRemoveBtn" title="Убрать" style="position:absolute;top:8px;right:10px;cursor:pointer;opacity:.5;font-size:16px;">✕</span>
+                <label>Название анкеты
+                  <input class="slotAccountName" placeholder="Например: Main account" />
+                </label>
+                <label>Прокси анкеты (необязательно)
+                  <input class="slotProxy" placeholder="host:port:логин:пароль" style="font-family:'JetBrains Mono',monospace;font-size:12px;" />
+                </label>
+                <label style="margin-top:8px;">Протокол прокси
+                  <select class="slotProxyScheme" style="margin-top:6px;">
+                    <option value="socks5">SOCKS5</option>
+                    <option value="http">HTTP</option>
+                  </select>
+                </label>
+                <div class="slotStandardFields">
+                  <label>URL профиля / проверки
+                    <input class="slotCheckUrl" placeholder="https://love.mail.ru/profile/..." />
+                  </label>
+                  <label>Cookie-Editor JSON
+                    <textarea class="slotCookiesJson" placeholder='[{"name":"UID","value":"..."}]'></textarea>
+                  </label>
+                </div>
+                <div class="slotVznFields" style="display:none;">
+                  <label>Email
+                    <input class="slotVznEmail" placeholder="email@mail.ru" />
+                  </label>
+                  <button type="button" class="secondary slotVznSendCode" style="margin-bottom:10px;">Получить код</button>
+                  <div class="slotVznCodeRow" style="display:none;">
+                    <label>Код из письма
+                      <input class="slotVznCode" placeholder="123456" />
+                    </label>
+                  </div>
+                </div>
+                <div class="slotTwinbyFields" style="display:none;">
+                  <label>Email
+                    <input class="slotTwinbyEmail" placeholder="email@mail.ru" />
+                  </label>
+                  <button type="button" class="secondary slotTwinbySendCode" style="margin-bottom:10px;">Получить код</button>
+                  <label>Код из письма
+                    <input class="slotTwinbyCode" placeholder="123456" />
+                  </label>
+                </div>
+                <div class="slotBadangaFields" style="display:none;">
+                  <label>Логин (email)
+                    <input class="slotBadangaLogin" placeholder="you@mail.ru" />
+                  </label>
+                  <label>Пароль
+                    <input class="slotBadangaPassword" type="password" placeholder="пароль от анкеты" />
+                  </label>
+                  <p class="hint" style="margin:6px 0 0;">Токен подтянется сам и будет обновляться, пока пароль не сменится.</p>
+                </div>
+                <div class="slotIntCityFields" style="display:none;">
+                  <label>Cookie Editor JSON (e.mail.ru)
+                    <textarea class="slotIntCityCookiesJson" placeholder='[{"name":"Mpop","value":"..."}]' style="min-height:60px;font-size:11px;"></textarea>
+                  </label>
+                </div>
+                <div class="slotAtolinFields" style="display:none;">
+                  <label>Роль анкеты
+                    <select class="slotAtolinRole" style="margin-top:6px;">
+                      <option value="main">Обработка — пишет в чатах</option>
+                      <option value="parser">Парс — собирает рассылки</option>
+                    </select>
+                  </label>
+                  <label style="margin-top:10px;">Cookie-Editor JSON (atolin.ru)
+                    <textarea class="slotAtolinCookiesJson" placeholder='[{"name":"PHPSESSID","value":"..."},{"name":"uids","value":"..."}]' style="min-height:70px;font-size:11px;"></textarea>
+                  </label>
+                  <label style="margin-top:10px;">Прокси
+                    <input class="slotAtolinProxy" placeholder="host:port:логин:пароль" style="font-family:'JetBrains Mono',monospace;font-size:12px;" />
+                  </label>
+                  <label style="margin-top:8px;">Протокол прокси
+                    <select class="slotAtolinProxyScheme" style="margin-top:6px;">
+                      <option value="socks5h">SOCKS5 (DNS через прокси)</option>
+                      <option value="socks5">SOCKS5</option>
+                      <option value="http">HTTP</option>
+                    </select>
+                  </label>
+                  <button type="button" class="secondary slotAtolinProxyCheck" style="margin:10px 0 4px;">⚡ Проверить прокси</button>
+                  <div class="slotAtolinProxyStatus" style="font:400 11px 'JetBrains Mono',monospace;color:var(--text2);min-height:16px;margin-bottom:6px;"></div>
+                  <p class="hint" style="margin:0;">Куки снимай с того же IP, что и прокси — Atolin привязывает сессию к адресу.</p>
+                </div>
+                <div class="slotOperatorFields" style="display:none;">
+                  <label>Номер телефона Telegram
+                    <input class="slotOperatorPhone" placeholder="+79991234567" />
+                  </label>
+                  <button type="button" class="secondary slotOperatorSendCode" style="margin-bottom:10px;">Получить код</button>
+                  <div class="slotOperatorCodeRow" style="display:none;">
+                    <label>Код из Telegram/SMS
+                      <input class="slotOperatorCode" placeholder="12345" />
+                    </label>
+                    <label>Пароль (только если стоит облачный пароль/2FA)
+                      <input class="slotOperatorPassword" type="password" placeholder="Оставь пустым, если 2FA нет" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </form>
+
+          <!-- Infinite canvas -->
+          <div id="canvasWrapper" style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:visible;">
+            <canvas id="webCanvas" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
+            <div id="accountsList" style="position:absolute;top:0;left:0;right:0;bottom:0;transform-origin:0 0;overflow:visible;">
+              <div class="gridEmpty" id="gridEmpty" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+                <div class="gridEmptyIcon"></div>
+                <b>Анкет пока нет</b>
+                <span>Подключи первую — она появится здесь карточкой</span>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </section>
+
+      <!-- ── АНКЕТЫ ── -->
+
+<!-- ── AI-МЕНЕДЖЕР ── -->
+<section class="page" id="aiPage">
+  <div class="aiPageLayout">
+    <div class="aiPageHead" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+      <h2>AI-Менеджер</h2>
+      <button class="addAnalyticsBtn" id="addAnalyticsBtn">+ Добавить</button>
+    </div>
+    <div class="analyticsGrid" id="analyticsGrid">
+      <div class="analyticsEmpty" id="analyticsEmpty">
+        <div class="gridEmptyIcon"></div>
+        <b>Аналитиков пока нет</b>
+        <span>Нажми "Добавить аналитика" чтобы создать первого</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+      <!-- ── ПЛАНИРОВАНИЕ ── -->
+      <section class="page" id="planPage">
+        <div class="planHead">
+          <div>
+            <h2 style="margin:0;">Планирование</h2>
+            <div class="crumb" id="planCounter">Задач: 0</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="platformBtn" id="planInviteBtn">+ Сотрудник</button>
+            <button class="btnMainSm" id="planAddBtn">+ Новая задача</button>
+          </div>
+        </div>
+
+        <div class="planFilters">
+          <button class="platformBtn active" data-pfilter="all">Все</button>
+          <button class="platformBtn" data-pfilter="new">Новые</button>
+          <button class="platformBtn" data-pfilter="doing">В работе</button>
+          <button class="platformBtn" data-pfilter="done">Сделано</button>
+          <button class="platformBtn" data-pfilter="mine">Мои</button>
+          <select id="planAssigneeFilter" class="aiSelect" style="width:220px;margin-left:auto;">
+            <option value="">Все исполнители</option>
+          </select>
+        </div>
+
+        <div id="planList" class="planList"></div>
+      </section>
+
+      <!-- ── ЧАТЫ ── -->
+      <section class="page" id="tasksPage">
+        <div class="tmChat">
+          <aside class="tmSide">
+            <div class="tmSideHead">
+              <span>Чаты</span>
+              <div style="display:flex;gap:6px;">
+                <button class="tmIconBtn" id="tmNewDm" title="Личный чат">👤</button>
+                <button class="tmIconBtn" id="tmNewGroup" title="Группа">＋</button>
+              </div>
+            </div>
+            <div class="tmRooms" id="tmRooms"></div>
+          </aside>
+          <div class="tmMain">
+            <div class="tmMainHead" id="tmMainHead">
+              <div style="min-width:0;">
+                <div class="tmRoomTitle" id="tmRoomTitle">Выбери чат</div>
+                <div class="tmRoomSub" id="tmRoomSub"></div>
+              </div>
+              <div class="tmHeadRight">
+                <div class="tmAddBox" id="tmAddBox" style="display:none;">
+                  <input id="tmAddEmail" placeholder="Имя или почта..." autocomplete="off" />
+                  <div class="tmSuggest" id="tmSuggest"></div>
+                </div>
+                <button class="tmIconBtn" id="tmRoomDelete" title="Удалить / выйти" style="display:none;">✕</button>
+              </div>
+            </div>
+            <div class="tmMessages" id="tmMessages">
+              <div class="tmPlaceholder">Слева выбери диалог или создай новый</div>
+            </div>
+            <div class="tmPending" id="tmPending"></div>
+            <div class="tmComposer" id="tmComposer" style="display:none;">
+              <button class="tmIconBtn" id="tmAttach" title="Прикрепить файл">📎</button>
+              <input type="file" id="tmFile" multiple style="display:none;" />
+              <textarea id="tmInput" rows="1" placeholder="Написать сообщение... (Shift+Enter — новая строка)"></textarea>
+              <button class="btnMainSm" id="tmSend">Отправить</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ОТЧЁТ ── -->
+      <section class="page" id="analyticsPage">
+
+        <style>
+          .tlrTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+          .tlrTop h1{font-size:22px;margin:0 8px 0 0;}
+          .tlrNav{display:flex;align-items:center;gap:8px;}
+          .tlrNavBtn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;font-size:18px;line-height:1;}
+          .tlrNavBtn:hover{border-color:rgba(34,211,238,.45);color:var(--cyan);}
+          .tlrMonth{font-weight:700;font-size:16px;min-width:140px;text-align:center;}
+          .tlrTools{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap;}
+          .tlrSync{font-size:12px;color:var(--text2);margin-bottom:16px;}
+          .tlrSync.bad{color:#fb7185;}
+          .tlrStats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px;}
+          .tlrStat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px 16px;}
+          .tlrStat b{display:block;font-size:24px;line-height:1.2;color:var(--c,var(--text));}
+          .tlrStat span{font-size:12px;color:var(--text2);}
+          .tlrDay{margin-bottom:22px;}
+          .tlrDayHead{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:700;font-size:14px;}
+          .tlrDayHead em{font-style:normal;font-size:12px;font-weight:600;color:var(--cyan);background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);padding:2px 9px;border-radius:999px;}
+          .tlrDayHead.today{color:var(--cyan);}
+          .tlrCards{display:flex;flex-direction:column;gap:12px;}
+          .tlrRows{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px 22px;}
+          .tlrBottom{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.06);padding-top:9px;}
+          .tlrBottom .tlrFoot{border:none;padding:0;gap:8px;}
+          .tlrBottom .tlrEff{border:none;padding:0;margin:0 0 0 auto;}
+          .tlrOut{grid-column:1 / -1;display:flex;gap:5px;margin-top:3px;}
+          .tlrOut span{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 4px;border-radius:9px;background:color-mix(in srgb,var(--c) 10%,transparent);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);}
+          .tlrOut b{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--c);line-height:1.1;}
+          .tlrOut small{font-size:9.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;}
+          .tlrOut .no{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);}
+          .tlrOut .no b{color:var(--text2);opacity:.5;}
+          .tlrOutTotal{display:flex;gap:8px;flex-wrap:wrap;}
+          .tlrOutTotal span{display:inline-flex;align-items:baseline;gap:6px;padding:5px 11px;border-radius:999px;background:color-mix(in srgb,var(--c) 12%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);font-size:11px;color:var(--text2);}
+          .tlrOutTotal b{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--c);}
+          .tlrCard{position:relative;overflow:hidden;background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.012));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 14px 12px 17px;display:flex;flex-direction:column;gap:10px;}
+          .tlrCard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--cyan));box-shadow:0 0 12px var(--c,var(--cyan));}
+          .tlrCardHead{display:flex;align-items:center;gap:8px;}
+          .tlrName{font-weight:700;font-size:14px;}
+          .tlrShift{margin-left:auto;font-size:11px;font-weight:600;color:var(--c,var(--text2));background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:3px 8px;border-radius:999px;white-space:nowrap;}
+          .tlrRow{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;}
+          .tlrTg{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .tlrTg:hover{color:var(--cyan);}
+          .tlrNum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;}
+          .tlrNum.zero{color:var(--text2);opacity:.6;}
+          .tlrBar{grid-column:1 / -1;height:4px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;}
+          .tlrBar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),#a78bfa);}
+          .tlrFoot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,.06);padding-top:8px;font-size:12px;color:var(--text2);}
+          .tlrFoot b{font-size:15px;color:var(--text);}
+          .tlrNote{font-size:12px;color:var(--text2);white-space:pre-wrap;}
+          .tlrChart{background:linear-gradient(165deg,rgba(255,255,255,.045),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 16px 8px;margin-bottom:24px;}
+          .tlrChartHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;}
+          .tlrChartHead b{font-size:14px;}
+          .tlrChartHead span{font-size:12px;color:var(--text2);}
+          .tlrChart svg{display:block;width:100%;height:auto;overflow:visible;}
+          .tlrChart .gl{stroke:rgba(255,255,255,.06);stroke-width:1;}
+          .tlrChart .ax{fill:var(--text2);font-size:11px;font-family:'JetBrains Mono',monospace;}
+          .tlrChart .ax.today{fill:var(--cyan);font-weight:700;}
+          .tlrChart .ln{fill:none;stroke:url(#tlrStroke);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(34,211,238,.6));}
+          .tlrChart .pt{fill:#0d0e13;stroke:var(--cyan);stroke-width:2;cursor:pointer;transition:r .12s;}
+          .tlrChart .pt:hover{r:6;fill:var(--cyan);}
+          .tlrChart .ring{fill:none;stroke:var(--cyan);stroke-width:2;animation:tlrPulse 1.6s ease-out infinite;transform-box:fill-box;transform-origin:center;}
+          @keyframes tlrPulse{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(3.2)}}
+          .tlrPlats{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+          .tlrPlat{font-size:10px;font-weight:600;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);}
+          .tlrPlat b{color:#22c55e;margin-left:3px;}
+          .tlrPlat s{color:#ef4444;text-decoration:none;margin-left:3px;}
+          .tlrPlats.none{font-size:10px;color:var(--text2);opacity:.6;}
+          .tlrEff{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.08);}
+          .tlrEff div{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);white-space:nowrap;}
+          .tlrEff b{display:inline;font-family:'JetBrains Mono',monospace;font-size:13px;}
+          .tlrEff b.g{color:#22c55e;}
+          .tlrEff b.r{color:#ef4444;}
+          .tlrEff span{font-size:11px;color:var(--text2);display:inline;}
+          .tlrTabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,.08);}
+          .tlrTab{appearance:none;border:none;background:none;color:var(--text2);font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+          .tlrTab:hover{color:var(--text);}
+          .tlrTab.active{color:var(--cyan);border-bottom-color:var(--cyan);background:rgba(34,211,238,.06);}
+          .tlmLegend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;font-size:11.5px;color:var(--text2);}
+          .tlmLegend span{display:inline-flex;align-items:center;gap:6px;}
+          .tlmLegend em{width:10px;height:10px;border-radius:3px;display:inline-block;}
+          .tlmLegend em.d{background:#fbbf24;}
+          .tlmLegend em.n{background:#a78bfa;}
+          .tlmLegend em.m{box-shadow:0 0 0 1px var(--cyan) inset;}
+          .tlmWrap{overflow:auto;max-height:calc(100vh - 230px);border:1px solid rgba(255,255,255,.1);border-radius:14px;background:#0d0e13;}
+          .tlmGrid{min-width:max-content;}
+          .tlmRow{display:grid;align-items:stretch;border-bottom:1px solid rgba(255,255,255,.05);}
+          .tlmRow:last-child{border-bottom:none;}
+          .tlmHead{position:sticky;top:0;z-index:3;background:#15161d;border-bottom:1px solid rgba(255,255,255,.12);}
+          .tlmCell{padding:4px;}
+          .tlmName{position:sticky;left:0;z-index:2;background:#0d0e13;border-right:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:6px 12px;overflow:hidden;}
+          .tlmHead .tlmName,.tlmFootRow .tlmName{background:#15161d;z-index:4;}
+          .tlmName b{font-family:'JetBrains Mono',monospace;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .tlmName span{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .tlmName{cursor:pointer;}
+          .tlmHead .tlmName,.tlmFootRow .tlmName{cursor:default;}
+          .tlmName:hover b{color:var(--cyan);}
+          .tlmTop{display:flex;align-items:center;gap:6px;}
+          .tlmPc{flex:none;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.4);color:#c4b5fd;}
+          .tlmPc.none{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:var(--text2);}
+          .tlmOld{font-size:10px;color:var(--text2);opacity:.75;}
+          .tlmHd{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:7px 2px;}
+          .tlmHd b{font-size:12px;font-family:'JetBrains Mono',monospace;}
+          .tlmHd span{font-size:9px;text-transform:uppercase;color:var(--text2);}
+          .tlmHd.now b,.tlmHd.now span{color:var(--cyan);}
+          .tlmDay{display:flex;flex-direction:column;gap:3px;border-left:1px solid rgba(255,255,255,.04);}
+          .tlmDay.now{background:rgba(34,211,238,.07);}
+          .tlmNode{position:relative;display:flex;align-items:center;gap:4px;padding:3px 5px 3px 9px;border-radius:7px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.035);cursor:pointer;line-height:1;}
+          .tlmNode::before{content:"";position:absolute;left:2px;top:3px;bottom:3px;width:3px;border-radius:2px;background:var(--o,transparent);}
+          .tlmWho{margin-top:-4px;}
+          .tlmWho em{border-radius:50%;}
+          .tlmGone{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:11.5px;color:var(--text2);user-select:none;}
+          .tlmGone input{width:13px;height:13px;accent-color:var(--cyan);cursor:pointer;margin:0;}
+          .tlmGone:hover{color:var(--text);}
+          .tlmWhoChip{cursor:pointer;padding:3px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);}
+          .tlmWhoChip:hover{border-color:var(--cyan);color:var(--text);}
+          .tlmWhoChip b{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);margin-left:2px;}
+          .tlmWhoChip i{font-style:normal;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);opacity:.8;}
+          .tlmWhoSum{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+          .tlmWhoSum span{display:inline-flex;align-items:baseline;gap:6px;padding:5px 11px;border-radius:999px;font-size:11px;color:var(--text2);background:color-mix(in srgb,var(--c,#888) 12%,transparent);border:1px solid color-mix(in srgb,var(--c,#888) 35%,transparent);}
+          .tlmWhoSum b{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--c,var(--text));}
+          .tlmWhoTbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+          .tlmWhoTbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.12);position:sticky;top:0;background:#15161d;}
+          .tlmWhoTbl td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap;}
+          .tlmWhoTbl td.m{font-family:'JetBrains Mono',monospace;}
+          .tlmWhoTbl td.n{font-family:'JetBrains Mono',monospace;text-align:right;}
+          .tlmWhoTbl tr:hover td{background:rgba(255,255,255,.03);}
+          .tlkHero{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:linear-gradient(135deg,rgba(255,215,120,.12),rgba(255,255,255,.02));border:1px solid rgba(255,215,120,.3);border-radius:18px;padding:18px 22px;margin-bottom:16px;}
+          .tlkCrown{font-size:34px;line-height:1;}
+          .tlkHeroName{font-size:21px;font-weight:700;display:flex;align-items:center;gap:9px;}
+          .tlkHeroName em{width:12px;height:12px;border-radius:50%;display:inline-block;}
+          .tlkHeroSub{font-size:12px;color:var(--text2);margin-top:3px;}
+          .tlkHeroNums{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;}
+          .tlkHeroNums div{text-align:center;min-width:64px;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);}
+          .tlkHeroNums b{display:block;font-family:'JetBrains Mono',monospace;font-size:19px;color:var(--c,var(--text));line-height:1.2;}
+          .tlkHeroNums span{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;}
+          .tlkWrap{border:1px solid rgba(255,255,255,.1);border-radius:14px;overflow:auto;background:#0d0e13;}
+          .tlkTbl{width:100%;border-collapse:collapse;font-size:13px;}
+          .tlkTbl th{text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);font-weight:700;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.12);background:#15161d;cursor:pointer;white-space:nowrap;position:sticky;top:0;z-index:2;}
+          .tlkTbl th:first-child,.tlkTbl th:nth-child(2){text-align:left;}
+          .tlkTbl th:hover{color:var(--cyan);}
+          .tlkTbl th.on{color:var(--cyan);}
+          .tlkTbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05);text-align:right;font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+          .tlkTbl td.nm{text-align:left;font-family:inherit;font-weight:600;cursor:pointer;}
+          .tlkTbl td.nm:hover{color:var(--cyan);}
+          .tlkTbl td.nm em{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px;}
+          .tlkTbl td.pos{text-align:center;color:var(--text2);width:46px;}
+          .tlkTbl tr:hover td{background:rgba(255,255,255,.03);}
+          .tlkTbl tr.top1 td.pos,.tlkTbl tr.top2 td.pos,.tlkTbl tr.top3 td.pos{font-size:15px;}
+          .tlkBar{height:4px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;min-width:70px;}
+          .tlkBar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),#a78bfa);}
+          .tlkZero{color:var(--text2);opacity:.45;}
+          .tlmNode:hover{border-color:var(--cyan);}
+          .tlmNode s{text-decoration:none;font-size:9px;font-weight:700;opacity:.85;}
+          .tlmNode.day s{color:#fbbf24;}
+          .tlmNode.night s{color:#a78bfa;}
+          .tlmNode.all{border-style:dashed;}
+          .tlmNode.all s{color:#94a3b8;font-size:8px;}
+          .tlmNode b{font-family:'JetBrains Mono',monospace;font-size:12px;}
+          .tlmNode i{margin-left:auto;font-style:normal;font-size:8.5px;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+          .tlmNode.man{box-shadow:0 0 0 1px var(--cyan) inset;}
+          .tlmNode.off{background:none;border-style:dashed;border-color:rgba(255,255,255,.07);opacity:.3;}
+          .tlmNode.off:hover{opacity:1;border-style:solid;border-color:var(--cyan);}
+          .tlmNode.off s,.tlmNode.off b{color:var(--text2);}
+          .tlmNode.off b{font-size:11px;}
+          .tlmTot{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-left:1px solid rgba(255,255,255,.12);}
+          .tlmTot b{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--cyan);}
+          .tlmTot i{font-style:normal;font-size:9.5px;color:var(--text2);font-family:'JetBrains Mono',monospace;}
+          .tlmFootRow{background:#15161d;border-top:1px solid rgba(255,255,255,.12);position:sticky;bottom:0;z-index:3;}
+          .tlmDaySum{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;border-left:1px solid rgba(255,255,255,.04);}
+          .tlmDaySum.zero{color:var(--text2);opacity:.4;}
+        </style>
+
+        <div class="tlrTop">
+          <h1>Отчёт</h1>
+          <div class="tlrNav">
+            <button class="tlrNavBtn" id="tlrPrev">‹</button>
+            <div class="tlrMonth" id="tlrMonth"></div>
+            <button class="tlrNavBtn" id="tlrNext">›</button>
+          </div>
+          <div class="tlrTools">
+            <select id="tlrFilter" class="aiSelect" style="display:none;min-width:180px;"></select>
+            <button class="ghost" id="tlrRefreshBtn">↻ Обновить</button>
+            <button class="ghost" id="tlrSyncBtn" style="display:none;">Подтянуть из бота сейчас</button>
+            <button class="ghost" id="tlrExportBtn">⬇ Скачать отчёт</button>
+          </div>
+        </div>
+        <div class="tlrSync" id="tlrSync"></div>
+        <div class="tlrTabs">
+          <button class="tlrTab active" data-tlrtab="days">По дням</button>
+          <button class="tlrTab" data-tlrtab="month">Месячный отчёт</button>
+          <button class="tlrTab" data-tlrtab="rank">Рейтинг</button>
+        </div>
+        <div id="tlrBody"></div>
+        <div id="tlmBody" style="display:none;"></div>
+        <div id="tlkBody" style="display:none;"></div>
+
+      </section>
+
+      <!-- Модалка добавления TG-аккаунта -->
+      <div class="modalBackdrop" id="reportAddAccountModal">
+        <div class="modal" style="max-width:380px;">
+          <div class="modalHead">
+            <span>Добавить TG-аккаунт</span>
+            <button class="modalClose" id="reportAddAccountModalClose">✕</button>
+          </div>
+          <div class="modalBody">
+            <label>@username
+              <input id="reportAddUsername" placeholder="@username" style="margin-top:6px;" />
+            </label>
+            <label style="margin-top:12px;">Название (необязательно)
+              <input id="reportAddLabel" placeholder="Например: Аня" style="margin-top:6px;" />
+            </label>
+            <button class="taskRunBtn" id="reportAddAccountSaveBtn" style="margin-top:16px;">Добавить</button>
+            <div class="result" id="reportAddAccountResult" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ручная правка ноды месячного отчёта -->
+      <div class="modalBackdrop" id="tlmEditModal">
+        <div class="modal" style="max-width:360px;">
+          <div class="modalHead">
+            <span id="tlmEditTitle">Правка</span>
+            <button class="modalClose" id="tlmEditClose">✕</button>
+          </div>
+          <div class="modalBody">
+            <label>Лиды <small style="color:var(--text2);font-weight:400;">пусто = считать автоматически</small>
+              <input id="tlmEditLeads" type="number" min="0" style="margin-top:6px;" />
+            </label>
+            <label style="margin-top:12px;">Заходы
+              <input id="tlmEditVisits" type="number" min="0" style="margin-top:6px;" />
+            </label>
+            <label style="margin-top:12px;">Брони
+              <input id="tlmEditBookings" type="number" min="0" style="margin-top:6px;" />
+            </label>
+            <label style="margin-top:12px;">Развороты
+              <input id="tlmEditCancels" type="number" min="0" style="margin-top:6px;" />
+            </label>
+            <button class="taskRunBtn" id="tlmEditSave" style="margin-top:16px;">Сохранить</button>
+            <button class="ghost" id="tlmEditReset" style="margin-top:8px;width:100%;">Сбросить к автоматическим</button>
+            <div class="result" id="tlmEditResult" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Реестр TG: ПК оператора и замена ника -->
+      <div class="modalBackdrop" id="tlmTgModal">
+        <div class="modal" style="max-width:380px;">
+          <div class="modalHead">
+            <span id="tlmTgTitle">TG</span>
+            <button class="modalClose" id="tlmTgClose">✕</button>
+          </div>
+          <div class="modalBody">
+            <label>ПК оператора <small style="color:var(--text2);font-weight:400;">например D14 или M14</small>
+              <input id="tlmTgPc" placeholder="D14" style="margin-top:6px;" />
+            </label>
+            <label style="margin-top:12px;">Заменён на новый ник <small style="color:var(--text2);font-weight:400;">пусто = актуальный</small>
+              <input id="tlmTgNext" placeholder="@newnick" style="margin-top:6px;" />
+            </label>
+            <div style="margin-top:8px;font-size:11.5px;color:var(--text2);line-height:1.45;">
+              Укажешь новый ник — эта строка исчезнет из отчёта, а все её лиды и правки перейдут на новый ник.
+            </div>
+            <button class="taskRunBtn" id="tlmTgSave" style="margin-top:16px;">Сохранить</button>
+            <div class="result" id="tlmTgResult" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Разбор по сотруднику -->
+      <div class="modalBackdrop" id="tlmWhoModal">
+        <div class="modal" style="max-width:720px;">
+          <div class="modalHead">
+            <span id="tlmWhoTitle">Сотрудник</span>
+            <button class="ghost" id="tlmWhoPdf" style="margin-left:auto;margin-right:8px;padding:5px 12px;font-size:12px;">🖨 PDF</button>
+            <button class="ghost" id="tlmWhoExport" style="margin-right:10px;padding:5px 12px;font-size:12px;">⬇ CSV</button>
+            <button class="modalClose" id="tlmWhoClose">✕</button>
+          </div>
+          <div class="modalBody" style="max-height:70vh;overflow:auto;">
+            <div id="tlmWhoBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ТАБЛИЦА ── -->
+      <section class="page" id="tablesPage" style="padding:0;overflow:hidden;flex-direction:column;position:fixed;top:0;left:var(--sidebar-w);right:0;bottom:0;z-index:50;">
+        <div id="sheetApp" style="flex:1;display:flex;flex-direction:column;overflow:hidden;height:100%;width:100%;"></div>
+      </section>
+
+      <!-- ── КОНТАКТЫ ── -->
+      <section class="page" id="contactsPage">
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">Контакты <span id="contactsTotalCount" style="color:var(--accent3);font-size:14px;font-weight:400;"></span></h2>
+            <div style="display:flex;gap:10px;">
+              <button class="ghost" id="contactsRefreshBtn">↻ Обновить</button>
+              <button class="ghost" id="contactsExportBtn">⬇ Экспорт CSV</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+            <input id="contactsSearch" placeholder="Поиск по email..." style="flex:1;min-width:200px;" />
+            <select id="contactsFilter" class="aiSelect" style="width:160px;">
+              <option value="all">Все</option>
+              <option value="unsent">Не отправлено</option>
+              <option value="sent">Отправлено</option>
+            </select>
+          </div>
+          <div id="contactsTable" style="font-family:'JetBrains Mono',monospace;font-size:12px;">
+            <div style="color:var(--text2);">Загрузка...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ПОЧТЫ ── -->
+      <section class="page" id="mailsPage">
+        <style>
+          .mlTable{width:100%;border-collapse:collapse;font-size:13px;}
+          .mlModes{display:flex;gap:4px;padding:3px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);width:max-content;margin-bottom:12px;}
+          .mlMode{background:none;border:none;color:var(--text2);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;white-space:nowrap;}
+          .mlMode.on{background:rgba(34,211,238,.14);color:var(--cyan);}
+          .mlGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start;}
+          .mlGroup{border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:linear-gradient(165deg,rgba(255,255,255,.045),rgba(255,255,255,.012));transition:border-color .12s;}
+          .mlGroup:hover{border-color:rgba(255,255,255,.16);}
+          .mlGroup.open{grid-column:1 / -1;border-color:rgba(34,211,238,.35);}
+          .mlGHead{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;cursor:pointer;}
+          .mlGArrow{flex:none;width:12px;font-size:11px;color:var(--text2);transition:transform .15s;}
+          .mlGroup.open > .mlGHead .mlGArrow{transform:rotate(90deg);color:var(--cyan);}
+          .mlGName{font-weight:700;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+          .mlGTotal{flex:none;font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--cyan);line-height:1;}
+          .mlGLabel{display:block;width:calc(100% - 32px);margin:0 16px 12px;font-size:12px;color:var(--text2);background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 9px;font-family:inherit;}
+          .mlGLabel:hover{border-color:rgba(255,255,255,.12);}
+          .mlGLabel:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);color:var(--text);outline:none;}
+          .mlGLabel[readonly]{border-color:transparent;cursor:default;}
+          .mlGLabel[readonly]:hover{border-color:transparent;}
+          .mlGNums{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;}
+          .mlGNum{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);}
+          .mlGNum b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+          .mlGBody{display:none;padding:0 8px 8px;border-top:1px solid rgba(255,255,255,.07);}
+          .mlGroup.open > .mlGBody{display:block;}
+          .mlTable th{text-align:left;padding:9px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;}
+          .mlTable td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+          .mlTable tr:hover td{background:rgba(255,255,255,.025);}
+          .mlTable input,.mlTable select{width:100%;background:transparent;border:1px solid transparent;border-radius:7px;color:var(--text);padding:5px 7px;font-size:13px;font-family:inherit;}
+          .mlTable input:hover,.mlTable select:hover{border-color:rgba(255,255,255,.12);}
+          .mlTable input:focus,.mlTable select:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);outline:none;}
+          .mlTable select option{background:#11131a;}
+          .mlMono{font-family:'JetBrains Mono',monospace;}
+          .resTabs{display:flex;gap:4px;margin:0 0 20px;padding:4px;border-radius:12px;
+                   background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+                   overflow-x:auto;}
+          .resTab{flex:0 0 auto;background:transparent;border:none;color:var(--text2);
+                  padding:9px 16px;border-radius:9px;cursor:pointer;font-size:13px;
+                  font-weight:600;white-space:nowrap;transition:all .15s;}
+          .resTab:hover{color:var(--text);background:rgba(255,255,255,.04);}
+          .resTab.active{background:rgba(34,211,238,.14);color:var(--cyan);
+                         box-shadow:inset 0 0 0 1px rgba(34,211,238,.3);}
+          .resTab i{font-style:normal;opacity:.65;font-size:12px;margin-left:5px;}
+
+          .asBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+          .asChip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+                  color:var(--text2);padding:7px 14px;border-radius:999px;cursor:pointer;
+                  font-size:12px;font-weight:600;transition:all .15s;}
+          .asChip:hover{color:var(--text);border-color:rgba(255,255,255,.18);}
+          .asChip.on{background:rgba(34,211,238,.15);color:var(--cyan);border-color:rgba(34,211,238,.45);}
+          .asChip b{opacity:.6;font-weight:600;margin-left:5px;}
+
+          .asGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;}
+          .asCard{position:relative;background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.012));
+                  border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:15px 16px 13px 18px;
+                  display:flex;flex-direction:column;gap:9px;transition:border-color .15s,transform .15s;
+                  --asC:#64748b;}
+          .asCard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+                          background:var(--asC);box-shadow:0 0 12px var(--asC);
+                          border-radius:16px 0 0 16px;}
+          .asCard:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.17);}
+          .asCard.verif{--asC:#10f5a8;} .asCard.ban{--asC:#fb7185;} .asCard.not_verif{--asC:#64748b;}
+          .asHead{display:flex;align-items:center;gap:8px;}
+          .asTitle{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+                   border-radius:7px;color:var(--text);font-size:15px;font-weight:700;
+                   padding:4px 6px;font-family:inherit;}
+          .asTitle:hover{border-color:rgba(255,255,255,.12);}
+          .asTitle:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);outline:none;}
+          .asRow{display:flex;align-items:center;gap:7px;}
+          .asLbl{width:58px;flex:0 0 auto;font-size:10px;text-transform:uppercase;
+                 letter-spacing:.05em;color:var(--text2);}
+          .asInp{flex:1;min-width:0;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);
+                 border-radius:8px;color:var(--text);padding:6px 9px;font-size:12.5px;
+                 font-family:'JetBrains Mono',monospace;}
+          .asInp:focus{border-color:rgba(34,211,238,.5);outline:none;}
+          .asInp::placeholder{color:rgba(255,255,255,.2);}
+          .asSel{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:8px;
+                 color:var(--text);padding:6px 9px;font-size:12.5px;font-family:inherit;flex:1;}
+          .asSel option{background:#11131a;}
+          .asIco{background:transparent;border:none;color:var(--text2);cursor:pointer;
+                 padding:3px 5px;font-size:13px;line-height:1;}
+          .asIco:hover{color:var(--cyan);}
+          .asIco.del:hover{color:#fb7185;}
+          .asEmpty{color:var(--text2);padding:26px 0;text-align:center;}
+
+          .asStats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px;}
+          .asStat{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.04);
+                  border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 14px;}
+          .asStat i{width:7px;height:7px;border-radius:50%;font-style:normal;}
+          .asStat b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
+          .asStat span{font-size:11.5px;color:var(--text2);}
+
+          .asTable{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);
+                   border-radius:14px;overflow:hidden;}
+          .asScroll{overflow-x:auto;}
+          .asInner{min-width:1120px;}
+          .asTh,.asTr{display:grid;grid-template-columns:var(--asCols);align-items:center;padding:0 14px;}
+          .asTh{height:36px;background:rgba(255,255,255,.035);
+                border-bottom:1px solid rgba(255,255,255,.08);font-size:10px;
+                letter-spacing:.07em;text-transform:uppercase;color:var(--text2);}
+          .asTr{height:44px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;
+                border-left:3px solid transparent;transition:background .12s;}
+          .asTr:hover{background:rgba(34,211,238,.06);}
+          .asTr:hover .asCp{opacity:1;}
+          .asTr.sel{background:rgba(34,211,238,.09);border-left-color:var(--cyan);}
+          .asCell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                  font-size:12.5px;padding-right:10px;}
+          .asMono{font-family:'JetBrains Mono',monospace;font-size:12px;}
+          .asDot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;display:inline-block;}
+          .asNode{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;}
+          .asTag{font-size:11px;padding:3px 8px;border-radius:5px;
+                 background:rgba(255,255,255,.06);color:var(--text2);}
+          .asBadge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;}
+          .asCp{opacity:0;background:transparent;border:none;cursor:pointer;color:var(--text2);
+                padding:2px 4px;font-size:12px;line-height:1;transition:opacity .12s;}
+          .asCp:hover{color:var(--cyan);}
+          .asMuted{color:rgba(255,255,255,.25);}
+
+          .asDrawer{position:fixed;top:0;right:0;bottom:0;width:430px;max-width:92vw;z-index:60;
+                    background:#101419;border-left:1px solid rgba(255,255,255,.1);
+                    box-shadow:-20px 0 50px rgba(0,0,0,.5);padding:22px;overflow-y:auto;
+                    transform:translateX(102%);transition:transform .18s ease;}
+          .asDrawer.open{transform:translateX(0);}
+          .asDrHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+          .asDrTitle{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+                     border-radius:8px;color:var(--text);font-size:18px;font-weight:700;
+                     padding:5px 7px;font-family:inherit;}
+          .asDrTitle:hover{border-color:rgba(255,255,255,.12);}
+          .asDrTitle:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);outline:none;}
+          .asFld{margin-top:13px;}
+          .asFld>label{display:block;font-size:10px;text-transform:uppercase;
+                       letter-spacing:.06em;color:var(--text2);margin-bottom:5px;}
+          .asFld .asInp,.asFld .asSel{width:100%;box-sizing:border-box;}
+          .asStatRow{display:flex;gap:7px;}
+          .asStatBtn{flex:1;font:inherit;font-size:12px;font-weight:600;padding:8px 0;
+                     border-radius:8px;background:transparent;
+                     border:1px solid rgba(255,255,255,.1);cursor:pointer;color:var(--text2);}
+          .asSaved{font-size:11px;color:var(--green);opacity:0;transition:opacity .2s;}
+          .asSaved.on{opacity:1;}
+
+          .asStats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px;}
+          .asStat{display:flex;align-items:center;gap:9px;background:var(--glass);
+                  border:1px solid var(--border);border-radius:var(--r);padding:9px 14px;}
+          .asStat i{width:7px;height:7px;border-radius:50%;font-style:normal;}
+          .asStat b{font:800 18px "Inter",sans-serif;font-variant-numeric:tabular-nums;}
+          .asStat span{font:400 11.5px "Space Grotesk",sans-serif;color:var(--text2);}
+
+          .asTable{background:rgba(255,255,255,.02);border:1px solid var(--border);
+                   border-radius:var(--r2);overflow:hidden;}
+          .asScroll{overflow-x:auto;}
+          .asInner{min-width:1120px;}
+          .asTh,.asTr{display:grid;grid-template-columns:var(--asCols);align-items:center;padding:0 14px;}
+          .asTh{height:36px;background:var(--header-bg);border-bottom:1px solid var(--border);
+                font:700 9.5px "Orbitron",sans-serif;letter-spacing:.09em;color:var(--text3);}
+          .asTr{height:44px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer;
+                border-left:3px solid transparent;transition:background var(--transition-fast);}
+          .asTr:hover{background:var(--cyan-dim);}
+          .asTr:hover .asCp{opacity:1;}
+          .asTr.sel{background:var(--cyan-dim);border-left-color:var(--cyan);}
+          .asCell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                  font:400 12.5px "Space Grotesk",sans-serif;padding-right:10px;}
+          .asMono{font-family:"JetBrains Mono",monospace;font-size:11.5px;}
+          .asDot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;display:inline-block;}
+          .asNode{display:flex;align-items:center;gap:8px;font:600 13px "Space Grotesk",sans-serif;}
+          .asTag{font-size:11px;padding:3px 8px;border-radius:5px;
+                 background:var(--glass);border:1px solid var(--border);color:var(--text2);}
+          .asBadge{font:700 9px "Orbitron",sans-serif;letter-spacing:.05em;
+                   padding:4px 8px;border-radius:5px;}
+          .asCp{opacity:0;background:transparent;border:none;cursor:pointer;color:var(--text3);
+                padding:2px 4px;font-size:12px;line-height:1;transition:opacity var(--transition-fast);}
+          .asCp:hover{color:var(--cyan);}
+          .asMuted{color:var(--text3);opacity:.5;}
+
+          .asDrawer{position:fixed;top:0;right:0;bottom:0;width:430px;max-width:92vw;z-index:900;
+                    background:var(--panel-bg);border-left:1px solid var(--border2);
+                    box-shadow:-20px 0 60px rgba(0,0,0,.65);padding:22px;overflow-y:auto;
+                    transform:translateX(102%);transition:transform var(--transition);}
+          .asDrawer.open{transform:translateX(0);}
+          .asDrHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+          .asDrTitle{flex:1;min-width:0;width:auto;background:transparent;
+                     border:1px solid transparent;border-radius:var(--r);color:var(--text);
+                     font:700 17px "Space Grotesk",sans-serif;padding:6px 8px;}
+          .asDrTitle:hover{border-color:var(--border2);}
+          .asDrTitle:focus{border-color:var(--accent2);background:rgba(92,110,248,.06);
+                           box-shadow:none;outline:none;}
+          .asFld{margin-top:13px;}
+          .asFld>label{display:block;margin:0 0 5px;text-shadow:none;
+                       font:600 9.5px "Orbitron",sans-serif;letter-spacing:.09em;color:var(--text3);}
+          .asFld .asInp,.asFld .asSel{width:100%;box-sizing:border-box;}
+          .asStatRow{display:flex;gap:7px;}
+          .asStatBtn{flex:1;padding:9px 0;border-radius:var(--r);background:transparent;
+                     border:1px solid var(--border2);cursor:pointer;color:var(--text2);
+                     font:700 9.5px "Orbitron",sans-serif;letter-spacing:.05em;
+                     transition:all var(--transition-fast);}
+          .asStatBtn:hover{border-color:var(--border3);color:var(--text);}
+          .asSaved{font:400 11px "Space Grotesk",sans-serif;color:var(--green);
+                   opacity:0;transition:opacity var(--transition);}
+          .asSaved.on{opacity:1;}
+          .pxCol{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
+                 border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+          .pxHead{display:flex;align-items:center;gap:9px;padding:12px 14px;
+                  background:rgba(255,255,255,.035);border-bottom:1px solid rgba(255,255,255,.07);}
+          .pxTitle{flex:1;min-width:0;background:transparent;border:1px solid transparent;
+                   border-radius:7px;color:var(--text);font-weight:700;font-size:13px;
+                   letter-spacing:.02em;padding:4px 6px;font-family:inherit;text-transform:uppercase;}
+          .pxTitle:not([readonly]):hover{border-color:rgba(255,255,255,.12);}
+          .pxTitle:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);outline:none;}
+          .pxCnt{font-size:11px;color:var(--text2);background:rgba(255,255,255,.06);
+                 padding:3px 9px;border-radius:999px;white-space:nowrap;}
+          .pxBtn{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text2);
+                 border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap;}
+          .pxBtn:hover{color:var(--cyan);border-color:rgba(34,211,238,.45);}
+          .pxList{max-height:460px;overflow-y:auto;padding:6px;}
+          .pxLine{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:8px;
+                  font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text);
+                  cursor:pointer;transition:background .12s;}
+          .pxLine:hover{background:rgba(34,211,238,.09);}
+          .pxLine span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .pxLine em{font-style:normal;opacity:0;color:var(--cyan);font-size:11px;}
+          .pxLine:hover em{opacity:.7;}
+          .pxLine.done{background:rgba(16,245,168,.12);}
+          .pxLine.done em{opacity:1;color:var(--green);}
+          .pxEdit{width:100%;min-height:300px;background:rgba(0,0,0,.3);border:none;
+                  color:var(--text);padding:12px 14px;font-family:'JetBrains Mono',monospace;
+                  font-size:11.5px;line-height:1.7;resize:vertical;}
+          .pxEdit:focus{outline:none;}
+          .pxFoot{padding:9px 14px;border-top:1px solid rgba(255,255,255,.07);
+                  display:flex;gap:8px;justify-content:flex-end;}
+
+          .gkBar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px;}
+          .gkSelBar{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:9px 14px;
+                    border-radius:var(--r);background:rgba(34,211,238,.08);
+                    border:1px solid rgba(34,211,238,.3);font-size:12.5px;color:var(--cyan);}
+          .gkSelBar.hidden{display:none;}
+          .gkSelBar b{font-variant-numeric:tabular-nums;}
+          .gkChk{-webkit-appearance:none;appearance:none;width:16px;height:16px;flex:0 0 auto;
+                 margin:0;border:1.5px solid var(--border2);border-radius:5px;
+                 background:transparent;cursor:pointer;position:relative;}
+          .gkChk:checked{background:var(--cyan);border-color:var(--cyan);}
+          .gkChk:checked::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:8px;
+                 border:solid #06231f;border-width:0 2px 2px 0;transform:rotate(45deg);}
+          .gkRow.sel{background:rgba(34,211,238,.07);}
+          .gkRow.used{opacity:.6;}
+          .gkRow.used:hover{opacity:1;}
+          .gkRow.used .gkKey{text-decoration:line-through;
+                 text-decoration-color:rgba(255,255,255,.3);}
+          .gkUsedTag{flex:0 0 auto;font-size:10px;font-weight:700;letter-spacing:.03em;
+                 text-transform:uppercase;padding:2px 8px;border-radius:999px;
+                 background:rgba(52,211,153,.14);border:1px solid rgba(52,211,153,.4);
+                 color:#6ee7b7;cursor:help;white-space:nowrap;}
+          .gkFree{display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+                 font-size:12px;color:var(--text2);user-select:none;}
+          .gkFree input{width:14px;height:14px;accent-color:var(--cyan);cursor:pointer;margin:0;}
+          .gkFree:hover{color:var(--text);}
+          .gkFreeCnt{font-size:11px;color:var(--text2);opacity:.8;}
+          .gkGroup{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
+                   border-radius:14px;overflow:hidden;margin-bottom:14px;}
+          .gkGroupHead{display:flex;align-items:center;gap:10px;padding:12px 15px;
+                       background:rgba(255,255,255,.035);border-bottom:1px solid rgba(255,255,255,.07);}
+          .gkWho{font-weight:700;font-size:14px;}
+          .gkKeys{padding:6px;}
+          .gkRow{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:9px;
+                 transition:background .12s;}
+          .gkRow:hover{background:rgba(255,255,255,.035);}
+          .gkKey{flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:12px;
+                 color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                 cursor:pointer;}
+          .gkKey:hover{color:var(--cyan);}
+          .gkNote{width:150px;flex:0 0 auto;background:transparent;border:1px solid transparent;
+                  border-radius:7px;color:var(--text2);font-size:12px;padding:4px 7px;font-family:inherit;}
+          .gkNote:hover{border-color:rgba(255,255,255,.12);}
+          .gkNote:focus{border-color:rgba(34,211,238,.5);background:rgba(0,0,0,.25);
+                        color:var(--text);outline:none;}
+
+          .wbTop{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+          .wbMonths{display:flex;gap:4px;overflow-x:auto;padding:3px;border-radius:10px;
+                    background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);}
+          .wbM{flex:0 0 auto;background:transparent;border:none;color:var(--text2);
+               padding:7px 13px;border-radius:8px;cursor:pointer;font-size:12px;
+               font-weight:600;white-space:nowrap;}
+          .wbM:hover{color:var(--text);background:rgba(255,255,255,.04);}
+          .wbM.on{background:rgba(34,211,238,.15);color:var(--cyan);}
+          .wbStats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+          .wbDay{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
+                 border-radius:13px;overflow:hidden;margin-bottom:12px;}
+          .wbDayHead{display:flex;align-items:center;gap:10px;padding:11px 15px;
+                     background:rgba(255,255,255,.035);border-bottom:1px solid rgba(255,255,255,.07);}
+          .wbDate{font-weight:700;font-size:14px;}
+          .wbWho{font-size:12px;color:var(--text2);}
+          .wbTot{margin-left:auto;font-size:12px;color:var(--cyan);font-weight:700;}
+          .wbRow{display:flex;align-items:center;gap:10px;padding:7px 15px;
+                 border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px;}
+          .wbRow:last-child{border-bottom:none;}
+          .wbRow:hover{background:rgba(255,255,255,.025);}
+          .wbMail{flex:1;min-width:0;font-family:'JetBrains Mono',monospace;
+                  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .wbPlat{flex:0 0 auto;width:120px;color:var(--cyan);font-size:12px;}
+          .wbNum{flex:0 0 auto;width:34px;color:var(--text2);font-size:11px;text-align:right;}
+          .mlStat{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--text2);}
+          .mlStat b{font-size:15px;color:var(--text);font-variant-numeric:tabular-nums;}
+          #mailsPage .bigPanel h2{font-size:18px;}
+          #mailsPage .mlTable tbody tr{transition:box-shadow .15s;}
+          .mlDot{width:8px;height:8px;border-radius:50%;}
+          .mlDel{background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text2);border-radius:8px;width:28px;height:28px;cursor:pointer;padding:0;}
+          .mlDel:hover{color:#fb7185;border-color:rgba(251,113,133,.5);}
+          .mlEye{background:transparent;border:none;color:var(--text2);cursor:pointer;padding:0 4px;font-size:13px;}
+          .mlEye:hover{color:var(--cyan);}
+        </style>
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">Ресурсы</h2>
+            <div style="display:flex;gap:10px;" id="mailActions">
+              <button class="ghost" id="mailRefreshBtn">↻ Обновить</button>
+              <button class="ghost" id="mailAddBtn">+ Добавить почты</button>
+            </div>
+          </div>
+
+          <div class="resTabs" id="resTabs">
+            <button class="resTab active" data-tab="mine">Мои почты <i id="mailTotalCount"></i></button>
+            <button class="resTab" data-tab="asset">Актив <i id="assetCount"></i></button>
+            <button class="resTab" data-tab="proxy">Прокси</button>
+            <button class="resTab" data-tab="keys">Грог ключи <i id="keysCount"></i></button>
+            <button class="resTab" data-tab="base">База <i id="baseMonth"></i></button>
+          </div>
+
+          <div class="resPane" id="resPane_mine">
+          <div class="mlModes" id="mlModes">
+            <button class="mlMode on" data-mlmode="list">Списком</button>
+            <button class="mlMode" data-mlmode="group">По участникам</button>
+            <button class="mlMode" data-mlmode="platform">По платформам</button>
+          </div>
+          <div id="mailStats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <input id="mailSearch" placeholder="Поиск по почте, телефону, заметке..." style="flex:1;min-width:200px;" />
+            <select id="mailFilterPerson" class="aiSelect" style="width:180px;"></select>
+            <select id="mailFilterPlatform" class="aiSelect" style="width:160px;"></select>
+            <select id="mailFilterStatus" class="aiSelect" style="width:160px;"></select>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <div id="mailTable"><div style="color:var(--text2);">Загрузка...</div></div>
+          </div>
+          </div><!-- /resPane_mine -->
+
+          <div class="resPane" id="resPane_asset" style="display:none;"></div>
+          <div class="resPane" id="resPane_proxy" style="display:none;"></div>
+          <div class="resPane" id="resPane_keys"  style="display:none;"></div>
+          <div class="resPane" id="resPane_base"  style="display:none;"></div>
+        </div>
+      </section>
+
+      <!-- Модалка добавления почт -->
+      <div class="modalBackdrop" id="mailAddModal">
+        <div class="modal" style="max-width:520px;">
+          <div class="modalHead">
+            <span>Добавить почты</span>
+            <button class="modalClose" id="mailAddCancel">✕</button>
+          </div>
+          <div class="modalBody">
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px;">
+              По одной в строке. Можно просто почту, можно
+              <span class="mlMono">почта:пароль</span> или
+              <span class="mlMono">почта:пароль:телефон</span>.
+            </div>
+            <textarea id="mailBulk" rows="8" placeholder="ivan1@mail.ru:qwerty123:+79990000001&#10;ivan2@mail.ru:qwerty456&#10;ivan3@mail.ru" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;"></textarea>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+              <label id="mailBulkPersonWrap" style="flex:1;min-width:150px;">Кому выдать
+                <select id="mailBulkPerson" class="aiSelect" style="margin-top:6px;"></select>
+              </label>
+              <div style="flex:1;min-width:150px;">Платформы
+                <div id="mailBulkPlatforms" style="display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:8px;"></div>
+              </div>
+            </div>
+            <button class="taskRunBtn" id="mailAddSave" style="margin-top:18px;">Добавить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Модалка внесения работы -->
+      <div class="modalBackdrop" id="wbAddModal">
+        <div class="modal" style="max-width:560px;">
+          <div class="modalHead">
+            <span>Внести работу за смену</span>
+            <button class="modalClose" id="wbAddCancel">✕</button>
+          </div>
+          <div class="modalBody">
+            <label style="display:block;">Дата смены
+              <input id="wbDate" type="date" style="margin-top:6px;" />
+            </label>
+            <label style="display:block;margin-top:14px;">Платформа
+              <select id="wbPlat" class="aiSelect" style="margin-top:6px;"></select>
+            </label>
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin:14px 0 8px;">
+              Вставь почты в левое поле, пароли в правое. Строки сопоставляются по порядку:
+              первая почта — первый пароль.
+            </div>
+            <div style="display:flex;gap:10px;">
+              <label style="flex:1;min-width:0;font-size:11px;color:var(--text2);">Почты
+                <textarea id="wbEmails" rows="10"
+                  placeholder="ivan1@bk.ru&#10;ivan2@bk.ru&#10;ivan3@mail.ru"
+                  style="width:100%;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;"></textarea>
+              </label>
+              <label style="flex:1;min-width:0;font-size:11px;color:var(--text2);">Пароли
+                <textarea id="wbPwds" rows="10"
+                  placeholder="qwerty123&#10;qwerty456&#10;5Rw6NgXcJak"
+                  style="width:100%;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.75;"></textarea>
+              </label>
+            </div>
+            <div id="wbMatch" style="font-size:11px;color:var(--text2);margin-top:7px;"></div>
+            <label style="display:block;margin-top:14px;">Заметка
+              <input id="wbNoteNew" placeholder="необязательно" style="margin-top:6px;" />
+            </label>
+            <button class="taskRunBtn" id="wbAddSave" style="margin-top:18px;">Внести</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Модалка добавления Groq-ключей -->
+      <div class="modalBackdrop" id="gkAddModal">
+        <div class="modal" style="max-width:520px;">
+          <div class="modalHead">
+            <span>Добавить Groq-ключи</span>
+            <button class="modalClose" id="gkAddCancel">✕</button>
+          </div>
+          <div class="modalBody">
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px;">
+              По одному ключу в строке. Дубли и короткие строки пропускаются.
+            </div>
+            <textarea id="gkBulk" rows="8" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx&#10;gsk_yyyyyyyyyyyyyyyyyyyy"
+              style="width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;"></textarea>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+              <label id="gkWhoWrap" style="flex:1;min-width:160px;">Кому выдать
+                <select id="gkWho" class="aiSelect" style="margin-top:6px;"></select>
+              </label>
+              <label style="flex:1;min-width:160px;">Заметка
+                <input id="gkNoteNew" placeholder="например: основные" style="margin-top:6px;" />
+              </label>
+            </div>
+            <button class="taskRunBtn" id="gkAddSave" style="margin-top:18px;">Добавить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── КАБИНЕТ ── -->
+      <section class="page" id="trainingPage">
+        <style>
+          .tvGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+          .tvCard{background:rgba(255,255,255,.03);border:1px solid var(--border);
+                  border-radius:var(--r3);overflow:hidden;display:flex;flex-direction:column;
+                  transition:border-color var(--transition);}
+          .tvCard:hover{border-color:var(--border2);}
+          .tvMedia{position:relative;width:100%;aspect-ratio:16/9;background:#0b0b11;
+                   display:grid;place-items:center;cursor:pointer;overflow:hidden;}
+          .tvMedia img,.tvMedia video{width:100%;height:100%;object-fit:cover;display:block;}
+          .tvPlay{position:absolute;width:52px;height:52px;border-radius:50%;
+                  background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.3);
+                  display:grid;place-items:center;pointer-events:none;}
+          .tvPlay svg{width:20px;height:20px;margin-left:3px;}
+          .tvBody{padding:13px 15px 15px;display:flex;flex-direction:column;gap:6px;flex:1;}
+          .tvTitle{font:600 14px "Space Grotesk",sans-serif;color:var(--text);}
+          .tvDesc{font-size:12.5px;color:var(--text2);line-height:1.5;white-space:pre-line;}
+          .tvMeta{margin-top:auto;padding-top:9px;display:flex;align-items:center;gap:10px;
+                  font-size:11px;color:var(--text3);}
+          .tvDel{margin-left:auto;background:transparent;border:1px solid rgba(255,92,133,.3);
+                 color:#ff5c85;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;}
+          .tvDel:hover{background:rgba(255,92,133,.12);}
+          .tvEmpty{color:var(--text2);padding:40px 0;text-align:center;}
+          .tvViewer{position:fixed;inset:0;z-index:1200;background:rgba(5,6,10,.94);
+                    display:none;align-items:center;justify-content:center;padding:32px;}
+          .tvViewer.open{display:flex;}
+          .tvViewer video,.tvViewer img{max-width:92vw;max-height:86vh;border-radius:12px;}
+          .tvClose{position:absolute;top:18px;right:22px;width:38px;height:38px;border-radius:10px;
+                   border:1px solid var(--border2);background:rgba(0,0,0,.4);color:var(--text);
+                   font-size:16px;cursor:pointer;}
+        </style>
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">Видео обучение</h2>
+            <button class="ghost" id="tvAddBtn" style="display:none;">+ Загрузить</button>
+          </div>
+          <div class="tvGrid" id="tvGrid"><div class="tvEmpty">Загрузка...</div></div>
+        </div>
+      </section>
+
+      <div class="tvViewer" id="tvViewer">
+        <button class="tvClose" id="tvViewerClose">✕</button>
+        <div id="tvViewerBody"></div>
+      </div>
+
+      <div class="modalBackdrop" id="tvAddModal">
+        <div class="modal" style="max-width:520px;">
+          <div class="modalHead">
+            <span>Новый материал</span>
+            <button class="modalClose" id="tvAddCancel">✕</button>
+          </div>
+          <div class="modalBody">
+            <label>Название</label>
+            <input id="tvTitle" placeholder="Например: Как подключить анкету Мамбы" />
+            <label>Описание</label>
+            <textarea id="tvDesc" rows="4" placeholder="Что внутри, на что обратить внимание" style="min-height:90px;"></textarea>
+            <label>Файл</label>
+            <input type="file" id="tvFile" accept="video/*,image/*" style="padding:8px;" />
+            <div style="font-size:11.5px;color:var(--text3);margin-top:8px;line-height:1.5;">
+              Видео и фото. Предел — 45 МБ на файл.
+            </div>
+            <div id="tvAddStatus" style="font-size:12px;color:var(--text2);min-height:16px;margin-top:10px;"></div>
+            <button class="taskRunBtn" id="tvAddSave" style="margin-top:14px;">Загрузить</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="page" id="cabinetPage">
+        <style>
+          .mtPanel{border:1px solid rgba(251,191,36,.3);background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(255,255,255,.015));border-radius:16px;padding:16px 18px;margin-bottom:18px;display:flex;flex-direction:column;gap:12px;}
+          .mtTop{display:flex;align-items:center;gap:16px;}
+          .mtTitle{font-weight:700;font-size:15px;color:#fbbf24;}
+          .mtHint{font-size:12px;color:var(--text2);margin-top:3px;max-width:560px;line-height:1.5;}
+          .mtSwitch{position:relative;flex:none;width:52px;height:28px;margin-left:auto;cursor:pointer;}
+          .mtSwitch input{opacity:0;width:0;height:0;}
+          .mtSlider{position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);transition:.18s;}
+          .mtSlider::before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--text2);transition:.18s;}
+          .mtSwitch input:checked + .mtSlider{background:rgba(251,191,36,.3);border-color:#fbbf24;}
+          .mtSwitch input:checked + .mtSlider::before{transform:translateX(24px);background:#fbbf24;}
+          .mtState{font-size:12px;color:var(--text2);}
+          .mtOverlay{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:40px;text-align:center;background:#07080c;}
+          .mtOverlay svg{width:84px;height:84px;color:#fbbf24;animation:mtSpin 4s linear infinite;}
+          @keyframes mtSpin{to{transform:rotate(360deg);}}
+          .mtOverlay h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.01em;}
+          .mtOverlay p{margin:0;max-width:520px;font-size:15px;line-height:1.6;color:var(--text2);}
+          .mtOverlay small{font-size:12px;color:var(--text2);opacity:.6;}
+          .mtBanner{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9999;padding:9px 18px;border-radius:999px;background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.45);color:#fde68a;font-size:12.5px;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.4);}
+          .cbTable{width:100%;border-collapse:collapse;font-size:13px;}
+          .cbTable th{text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.06em;
+                      text-transform:uppercase;color:var(--text2);
+                      border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;}
+          .cbTable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);}
+          .cbTable tr:hover td{background:rgba(255,255,255,.025);}
+          .cbMail{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);}
+          .cbTag{font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;
+                 border-radius:999px;background:rgba(255,255,255,.07);color:var(--text2);}
+          .cbTag.adm{background:rgba(34,211,238,.15);color:var(--cyan);}
+          .cbTag.on{background:rgba(16,245,168,.14);color:var(--green);}
+          .cbDel{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text2);
+                 border-radius:8px;padding:5px 11px;font-size:11px;cursor:pointer;white-space:nowrap;}
+          .cbDel:hover{color:#fb7185;border-color:rgba(251,113,133,.5);background:rgba(251,113,133,.07);}
+        </style>
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">Кабинет <span id="cbCount" style="color:var(--accent3);font-size:14px;font-weight:400;"></span></h2>
+            <button class="ghost" id="cbRefreshBtn">↻ Обновить</button>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+            Все, кто зарегистрировался в системе. Удаление снимает доступ и стирает
+            личные данные пользователя. С зачисткой — удаляются ещё и все его анкеты.
+          </div>
+          <div class="mtPanel">
+            <div class="mtTop">
+              <div>
+                <div class="mtTitle">Технические работы</div>
+                <div class="mtHint">Пока включено, все участники видят заглушку и не могут работать. Тебя это не касается.</div>
+              </div>
+              <label class="mtSwitch">
+                <input type="checkbox" id="mtToggle" />
+                <span class="mtSlider"></span>
+              </label>
+            </div>
+            <input id="mtMessage" placeholder="Что написать людям, например: обновляем отчёты, вернёмся через час" />
+            <div class="mtState" id="mtState"></div>
+          </div>
+          <input id="cbSearch" placeholder="Поиск по почте или имени..." style="width:100%;margin-bottom:14px;" />
+          <div style="overflow-x:auto;">
+            <div id="cbTable"><div style="color:var(--text2);">Загрузка...</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── КОМАНДА ── -->
+      <section class="page" id="teamPage">
+        <style>
+          .ctGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+          .ctPanel{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;}
+          .ctPanelTitle{font-weight:700;font-size:14px;letter-spacing:.02em;}
+          .ctHint{font-size:12px;color:var(--text2);}
+          .ctNodes{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px;}
+          .ctNode{background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:transform .15s,border-color .15s;}
+          .ctNode:hover{transform:translateY(-2px);border-color:rgba(34,211,238,.35);}
+          .ctNode.done{opacity:.55;}
+          .ctNodeHead{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+          .ctNodeUser{font-weight:700;font-size:15px;}
+          .ctNodeDate{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent3);background:rgba(255,255,255,.06);padding:3px 9px;border-radius:999px;white-space:nowrap;}
+          .ctChips{display:flex;flex-wrap:wrap;gap:6px;}
+          .ctChip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.25);text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+          .ctChip.pick{cursor:pointer;background:rgba(255,255,255,.04);color:var(--text2);border-color:rgba(255,255,255,.12);user-select:none;}
+          .ctChip.pick.on{background:rgba(34,211,238,.18);color:var(--cyan);border-color:rgba(34,211,238,.5);}
+          .ctChipX{opacity:.5;cursor:pointer;font-size:10px;}
+          .ctChipX:hover{opacity:1;color:#fb7185;}
+          .ctNote{font-size:13px;color:var(--text2);white-space:pre-wrap;border-left:2px solid rgba(255,255,255,.12);padding-left:8px;}
+          .ctStatus{font-size:12px;font-weight:600;}
+          .ctNodes{grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;}
+          .ctCard{position:relative;overflow:hidden;background:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.012));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px 16px 14px 19px;display:flex;flex-direction:column;gap:14px;transition:transform .18s,border-color .18s,box-shadow .18s;--ctAccent:var(--cyan);}
+          .ctCard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--ctAccent);box-shadow:0 0 14px var(--ctAccent);}
+          .ctCard:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.16);box-shadow:0 12px 30px rgba(0,0,0,.35);}
+          .ctCard.done{--ctAccent:var(--green);}
+          .ctCard.done .ctRows{opacity:.6;}
+          .ctCard svg{stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+          .ctCardHead{display:flex;align-items:center;gap:12px;}
+          .ctIconBox{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--ctAccent);flex:0 0 auto;}
+          .ctIconBox svg{width:19px;height:19px;}
+          .ctCardTitle{font-weight:700;font-size:15px;line-height:1.2;}
+          .ctCardSub{font-size:12px;color:var(--text2);margin-top:3px;}
+          .ctDatePill{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);padding:5px 10px;border-radius:999px;white-space:nowrap;}
+          .ctDatePill svg{width:14px;height:14px;color:var(--accent3);}
+          .ctRows{display:flex;flex-direction:column;gap:6px;}
+          .ctRow{display:flex;align-items:center;gap:10px;padding:7px 8px 7px 11px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);transition:border-color .15s;}
+          .ctRow:hover{border-color:rgba(34,211,238,.3);}
+          .ctRowIco{color:var(--cyan);display:grid;place-items:center;}
+          .ctRowIco svg{width:16px;height:16px;}
+          .ctRowName{flex:1;min-width:0;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+          .ctRowName:hover{color:var(--cyan);}
+          .ctIconBtn{width:30px;height:30px;flex:0 0 auto;border-radius:9px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--text2);cursor:pointer;padding:0;transition:all .15s;}
+          .ctIconBtn:hover{color:var(--cyan);border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.08);}
+          .ctIconBtn.ok{color:var(--green);border-color:rgba(16,245,168,.5);}
+          .ctIconBtn svg{width:15px;height:15px;}
+          .ctCardNote{font-size:13px;color:var(--text2);white-space:pre-wrap;display:flex;gap:8px;}
+          .ctCardNote svg{width:15px;height:15px;flex:0 0 auto;margin-top:2px;}
+          .ctCardFoot{display:flex;align-items:center;gap:8px;}
+          .ctStatusPill{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.05);color:var(--ctAccent);}
+          .ctDot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;}
+          .ctCard:not(.done) .ctDot{animation:ctPulse 1.6s infinite;}
+          @keyframes ctPulse{0%,100%{opacity:1}50%{opacity:.3}}
+          .ctActBtn{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+          .ctActBtn svg{width:14px;height:14px;stroke-width:2;}
+          .ctActBtn:hover{border-color:rgba(16,245,168,.5);color:var(--green);}
+          .ctActBtn.danger:hover{border-color:rgba(251,113,133,.5);color:#fb7185;}
+          .effWrap{overflow-x:auto;border:1px solid rgba(255,255,255,.08);border-radius:14px;margin-top:12px;}
+          .effTable{width:100%;border-collapse:collapse;min-width:900px;font-size:13px;}
+          .effTable th{text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;}
+          .effTable td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+          .effTable tr:hover td{background:rgba(255,255,255,.02);}
+          .effNum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;}
+          .effNum small{display:block;font-size:10px;font-weight:500;color:var(--text2);}
+          .effGood{color:#22c55e;}
+          .effBad{color:#ef4444;}
+          .effChips{display:flex;flex-wrap:wrap;gap:5px;}
+          .effChip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);white-space:nowrap;}
+          .effChip.tg{font-family:'JetBrains Mono',monospace;color:var(--cyan);background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.25);}
+        </style>
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">Команда</h2>
+            <button class="ghost" id="teamRefreshBtn">↻ Обновить</button>
+          </div>
+
+          <div class="ctGrid">
+            <div class="ctPanel">
+              <div class="ctPanelTitle">1. Контакты <span id="ctContactsCount" style="color:var(--accent3);font-weight:400;"></span></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input id="ctNewContact" placeholder="@username (можно несколько через пробел)" style="flex:2;min-width:180px;" />
+                <input id="ctNewContactNote" placeholder="Заметка (необязательно)" style="flex:1;min-width:140px;" />
+                <button class="taskRunBtn" id="ctAddContactBtn" style="width:auto;padding:10px 16px;margin:0;">+ Добавить</button>
+              </div>
+              <div class="ctHint" id="ctPickedCount"></div>
+              <div class="ctChips" id="ctContactsList"></div>
+            </div>
+
+            <div class="ctPanel">
+              <div class="ctPanelTitle">2. Назначить</div>
+              <select id="ctUserSelect" class="aiSelect"></select>
+              <input id="ctDate" type="date" />
+              <select id="ctShift" class="aiSelect">
+                <option value="day|09:00|21:00">Дневная · 09:00–21:00</option>
+                <option value="night|21:00|09:00">Ночная · 21:00–09:00</option>
+                <option value="day|09:00|19:00">Дневная · 09:00–19:00</option>
+                <option value="">По графику</option>
+              </select>
+              <textarea id="ctNote" rows="3" placeholder="Что сделать (необязательно)"></textarea>
+              <button class="taskRunBtn" id="ctAssignBtn" style="margin:0;">Назначить выбранные контакты</button>
+              <div class="result" id="ctAssignResult" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div class="ctPanelTitle" style="margin-top:24px;">3. Назначения</div>
+          <div id="teamAssignments"><div style="color:var(--text2);">Загрузка...</div></div>
+
+          <div class="ctPanelTitle" style="margin-top:30px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            4. Эффективность
+            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+              <button class="schNavBtn" id="effPrev">‹</button>
+              <span id="effMonth" style="min-width:140px;text-align:center;font-weight:600;"></span>
+              <button class="schNavBtn" id="effNext">›</button>
+            </span>
+          </div>
+          <div id="teamEff"></div>
+        </div>
+      </section>
+
+      <!-- ── МОИ ЗАДАНИЯ ── -->
+      <section class="page" id="myTasksPage">
+        <div class="bigPanel">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:12px;">
+            <h2 style="margin:0;">МОИ TG</h2>
+            <button class="ghost" id="myTasksRefreshBtn">↻ Обновить</button>
+          </div>
+          <style>
+            .tpHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+            .tpHead b{font-size:15px;}
+            .tpDays{display:flex;gap:4px;padding:3px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);}
+            .tpDay{background:none;border:none;color:var(--text2);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;white-space:nowrap;}
+            .tpDay.on{background:rgba(34,211,238,.14);color:var(--cyan);}
+            .tpCnt{font-size:12px;color:var(--text2);}
+            .tpCnt b{color:var(--cyan);}
+            .tpGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;}
+            .tpCard{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:13px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);}
+            .tpCard.free{border-color:rgba(52,211,153,.3);}
+            .tpCard.mine{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.07);}
+            .tpCard.off{opacity:.45;}
+            .tpInfo{flex:1;min-width:0;}
+            .tpNick{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .tpSub{font-size:11.5px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+            .tpSub.taken{color:#fbbf24;}
+            .tpSub.own{color:var(--cyan);}
+            .tpPc{flex:none;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.4);color:#c4b5fd;}
+            .tpBtn{flex:none;border:none;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+            .tpBtn.take{background:rgba(52,211,153,.16);border:1px solid rgba(52,211,153,.45);color:#6ee7b7;}
+            .tpBtn.take:hover{background:rgba(52,211,153,.28);}
+            .tpBtn.drop{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:var(--text2);}
+            .tpBtn.drop:hover{color:#fb7185;border-color:rgba(251,113,133,.45);}
+            .tpBtn:disabled{opacity:.4;cursor:default;}
+            .tpIco{flex:none;background:none;border:none;color:var(--text2);cursor:pointer;font-size:13px;padding:3px 5px;border-radius:6px;}
+            .tpIco:hover{color:var(--cyan);}
+            .tpIco.del:hover{color:#fb7185;}
+            .tpIco.star{color:#4b5563;}
+            .tpIco.star.on{color:#fbbf24;}
+            .tpIco.star:hover{color:#fbbf24;}
+            .tpPrio{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px;border-radius:15px;background:linear-gradient(135deg,rgba(251,191,36,.12),rgba(255,255,255,.02));border:1px solid rgba(251,191,36,.32);}
+            .tpPrioT{flex:none;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#fbbf24;}
+            .tpPrioT span{font-size:11px;font-weight:500;color:var(--text2);}
+            .tpPrioList{display:flex;flex-wrap:wrap;gap:7px;flex:1;min-width:200px;}
+            .tpPrioTag{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:rgba(251,191,36,.14);border:1px solid rgba(251,191,36,.4);font-family:'JetBrains Mono',monospace;font-size:12px;color:#fde68a;}
+            .tpPrioTag i{font-style:normal;font-size:10px;color:var(--text2);font-family:inherit;}
+            .tpPrioEmpty{font-size:12px;color:var(--text2);}
+            .tpCard.prio{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.06);}
+            .tpWarn{padding:12px 16px;margin-bottom:12px;border-radius:13px;font-size:13px;font-weight:600;color:#fca5a5;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.35);}
+          </style>
+
+          <div class="tpHead">
+            <b>Пул анкет</b>
+            <div class="tpDays" id="tpDays"></div>
+            <span class="tpCnt" id="tpCnt"></span>
+            <button class="ghost" id="tpAddBtn" style="display:none;margin-left:auto;">+ Анкета</button>
+          </div>
+          <div id="tpPrio"></div>
+          <div id="tpBody" style="margin-bottom:26px;"><div style="color:var(--text2);">Загрузка...</div></div>
+
+          <h3 style="margin:0 0 10px;font-size:15px;">Мои назначения</h3>
+          <div id="myTasksList"><div style="color:var(--text2);">Загрузка...</div></div>
+        </div>
+      </section>
+
+      <!-- ── ГРАФИК ── -->
+      <section class="page" id="schedulePage">
+        <style>
+          .schTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+          .schNav{display:flex;align-items:center;gap:8px;}
+          .schNavBtn{width:34px;height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;display:grid;place-items:center;font-size:18px;line-height:1;}
+          .schNavBtn:hover{border-color:rgba(34,211,238,.45);color:var(--cyan);}
+          .schMonth{font-weight:700;font-size:18px;min-width:160px;text-align:center;}
+          .schTools{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;align-items:center;}
+          .schTool{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;}
+          .schTool i{width:10px;height:10px;border-radius:3px;background:var(--c);box-shadow:0 0 8px var(--c);}
+          .schTool.on{border-color:var(--c);color:var(--text);background:color-mix(in srgb,var(--c) 14%,transparent);}
+          .schGridWrap{overflow:auto;border:1px solid rgba(255,255,255,.08);border-radius:14px;max-height:70vh;}
+          .schGrid{display:grid;width:max-content;user-select:none;}
+          .schCorner,.schHead{position:sticky;top:0;z-index:2;background:#111217;}
+          .schCorner{left:0;z-index:3;padding:10px 12px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;}
+          .schHead{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:44px;border-bottom:1px solid rgba(255,255,255,.12);font-size:12.5px;}
+          .schHead b{font-variant-numeric:tabular-nums;}
+          .schHead span{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;}
+          .schHead.we{background:rgba(255,255,255,.04);}
+          .schHead.we b{color:#8b8fa0;}
+          .schHead.today{background:rgba(42,212,238,.16);}
+          .schHead.today b,.schHead.today span{color:var(--cyan);}
+          .schName{position:sticky;left:0;z-index:1;background:#111217;padding:0 12px;display:flex;align-items:center;font-weight:600;font-size:13px;border-bottom:1px solid rgba(255,255,255,.055);border-right:1px solid rgba(255,255,255,.12);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:42px;}
+          .schName.odd{background:#141520;}
+          /* Тип смены — буква и полоска слева. Явка — заливка ячейки.
+             Два разных параметра кодируются разными каналами, иначе сливаются. */
+          .schCell{height:42px;display:grid;place-items:center;position:relative;cursor:pointer;
+                   font:600 12.5px 'JetBrains Mono',monospace;color:var(--text3);
+                   border-bottom:1px solid rgba(255,255,255,.055);
+                   border-left:1px solid rgba(255,255,255,.04);transition:background .1s;}
+          .schCell:hover{filter:brightness(1.3);}
+          .schCell.we{background:rgba(255,255,255,.03);}
+          /* зебра — чтобы вести взглядом по строке через весь месяц */
+          .schCell.odd{background:rgba(255,255,255,.018);}
+          .schCell.odd.we{background:rgba(255,255,255,.045);}
+          .schCell.today{background:rgba(42,212,238,.07);}
+          /* утолщённая граница по понедельникам — иначе глаз теряет колонку */
+          .schCell.mon,.schHead.mon,.schCover.mon{border-left:2px solid rgba(255,255,255,.14);}
+
+          .schCell.s-day,.schCell.s-night,.schCell.s-training{
+                   background:rgba(255,255,255,.05);color:var(--sc);}
+          .schCell.s-day::before,.schCell.s-night::before,
+          .schCell.s-off::before,.schCell.s-training::before{
+                   content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sc);}
+          .schCell.s-day{--sc:#ffb020;}
+          .schCell.s-night{--sc:#a78bfa;}
+          .schCell.s-training{--sc:#f472b6;}
+          /* выходной — тихий, внимания не требует */
+          /* Выходной: видно чётко, но без цвета — это не смена и явки не требует */
+          .schCell.s-off{--sc:#6b7585;color:#9aa3b2;
+                   background:repeating-linear-gradient(135deg,
+                              rgba(255,255,255,.075) 0 4px,rgba(255,255,255,.02) 4px 8px);}
+          /* Отметка явки на выходном только путает — гасим её */
+          .schCell.s-off.att-present,.schCell.s-off.att-absent{
+                   color:#9aa3b2;box-shadow:none;
+                   background:repeating-linear-gradient(135deg,
+                              rgba(255,255,255,.075) 0 4px,rgba(255,255,255,.02) 4px 8px);}
+          .schCell.s-off.att-present::before,.schCell.s-off.att-absent::before{background:#6b7585;}
+          .schCell.s-off.att-present::after,.schCell.s-off.att-absent::after{content:"";}
+
+          /* смена есть, явка не отмечена — пунктир «ждёт отметки» */
+          .schCell.s-day:not(.att-present):not(.att-absent),
+          .schCell.s-night:not(.att-present):not(.att-absent),
+          .schCell.s-training:not(.att-present):not(.att-absent){
+                   outline:1px dashed rgba(255,255,255,.2);outline-offset:-5px;}
+
+          /* ЯВКА — главный сигнал. Сплошная заливка против штриховки:
+             различается не только цветом, но и фактурой. */
+          .schCell.att-present{background:#2ee08a;color:#06231f;}
+          .schCell.att-present::before{background:rgba(0,0,0,.4);}
+          .schCell.att-absent{color:#ff5c85;
+                   background:repeating-linear-gradient(135deg,
+                              rgba(255,92,133,.3) 0 5px,rgba(255,92,133,.07) 5px 10px);
+                   box-shadow:inset 0 0 0 2px rgba(255,92,133,.9);}
+          .schCell.att-absent::before{background:#ff5c85;}
+
+          .schCell.att-present::after,.schCell.att-absent::after{
+                   position:absolute;top:2px;right:4px;font-size:11px;font-weight:900;line-height:1;}
+          .schCell.att-present::after{content:"✓";color:#06231f;}
+          .schCell.s-off{--sc:#6b7585;}
+          .schToolSep{width:1px;height:22px;background:rgba(255,255,255,.12);margin:0 4px;}
+          .schAtt{font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;align-self:flex-start;}
+          .schAtt.ok{color:#22c55e;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);}
+          .schAtt.bad{color:#ef4444;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);}
+          .schName.onToday{color:var(--text);background:linear-gradient(90deg,color-mix(in srgb,var(--c) 24%,#111217),#111217 90%);box-shadow:inset 3px 0 0 var(--c);}
+          .schNow{margin-left:auto;padding-left:8px;font-size:10px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.04em;flex:0 0 auto;}
+          .schToday{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;border-radius:14px;background:rgba(34,211,238,.05);border:1px solid rgba(34,211,238,.2);}
+          .schTodayTitle{font-size:11px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.06em;margin-right:4px;}
+          .schTodayChip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;font-size:12px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);}
+          .schTodayChip i{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:schPulse 1.6s infinite;}
+          @keyframes schPulse{0%,100%{opacity:1}50%{opacity:.3}}
+          .schCoverName{position:sticky;left:0;z-index:1;background:#111217;padding:0 12px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;height:32px;border-top:1px solid rgba(255,255,255,.08);}
+          .schCoverName i{width:8px;height:8px;border-radius:2px;background:var(--c);box-shadow:0 0 6px var(--c);}
+          .schCover{height:32px;display:grid;place-items:center;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text2);border-top:1px solid rgba(255,255,255,.08);border-left:1px solid rgba(255,255,255,.03);}
+          .schCover.ok-day{color:#fbbf24;}
+          .schCover.ok-night{color:#a78bfa;}
+          .schCover.schNone{background:rgba(239,68,68,.16);color:#ef4444;box-shadow:inset 0 0 0 1px rgba(239,68,68,.45);}
+          .schHead.gap{box-shadow:inset 0 -2px 0 #ef4444;}
+          .schHead.gap b{color:#ef4444;}
+          .schGapWarn{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:11px 14px;border-radius:14px;font-size:13px;font-weight:700;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);}
+          .schGapWarn i{width:8px;height:8px;border-radius:50%;background:#ef4444;box-shadow:0 0 8px #ef4444;animation:schPulse 1.2s infinite;}
+          .schHideBtn{margin-left:auto;flex:0 0 auto;width:20px;height:20px;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--text2);font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s;padding:0;display:grid;place-items:center;}
+          .schNow + .schHideBtn{margin-left:6px;}
+          .schName:hover .schHideBtn{opacity:1;}
+          .schHideBtn:hover{color:#ef4444;border-color:rgba(239,68,68,.5);}
+          .schHidden{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--text2);}
+          .schHiddenChip{display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);}
+          .schUnhideBtn{border:none;background:rgba(34,211,238,.12);color:var(--cyan);border-radius:999px;font-size:11px;font-weight:600;padding:2px 8px;cursor:pointer;}
+          .schSumCell{height:42px;display:flex;align-items:center;justify-content:center;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.055);border-left:1px solid rgba(255,255,255,.12);}
+          .schSumCell.odd{background:rgba(255,255,255,.018);}
+          .schStatus{font-size:12px;color:var(--text2);min-height:18px;margin-top:10px;}
+          .schStats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px;}
+          .schStat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;}
+          .schStat .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);}
+          .schStat .ic svg{width:19px;height:19px;}
+          .schStat b{font-size:18px;display:block;line-height:1.2;}
+          .schStat span{font-size:12px;color:var(--text2);}
+          .schCal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;}
+          .schWd{font-size:11px;font-weight:700;color:var(--text2);text-align:center;padding-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+          .schDay{min-height:96px;border-radius:14px;padding:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:8px;}
+          .schDay.schBlank{background:transparent;border:none;}
+          .schDay.today{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 18px rgba(34,211,238,.2);}
+          .schDayNum{font-weight:700;font-size:14px;}
+          .schDayNum.we{color:#fb7185;}
+          .schTag{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:10px;font-size:12px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);}
+          .schTag svg{width:15px;height:15px;flex:0 0 auto;}
+          .schTag small{display:block;font-weight:500;opacity:.8;font-size:10px;}
+          #schedulePage svg{stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+          @media (max-width:700px){.schDay{min-height:64px;padding:6px;}.schTag{padding:4px 5px;font-size:10px;}.schTag small{display:none;}}
+        </style>
+        <div class="bigPanel">
+          <div class="schTop">
+            <div class="schNav">
+              <button class="schNavBtn" id="schPrev">‹</button>
+              <div class="schMonth" id="schMonthTitle"></div>
+              <button class="schNavBtn" id="schNext">›</button>
+            </div>
+            <div class="schTools" id="schAdminTools" style="display:none;">
+              <button class="schTool on" data-tool="day" style="--c:#fbbf24"><i></i>Дневная</button>
+              <button class="schTool" data-tool="night" style="--c:#a78bfa"><i></i>Ночная</button>
+              <button class="schTool" data-tool="off" style="--c:#34d399"><i></i>Выходной</button>
+              <button class="schTool" data-tool="training" style="--c:#f472b6"><i></i>Стажировка</button>
+              <span class="schToolSep"></span>
+              <button class="schTool" data-tool="present" style="--c:#22c55e"><i></i>Вышел</button>
+              <button class="schTool" data-tool="absent" style="--c:#ef4444"><i></i>Не вышел</button>
+              <span class="schToolSep"></span>
+              <button class="schTool" data-tool="clear" style="--c:#9ca3af"><i></i>Стереть</button>
+              <button class="taskRunBtn" id="schNotifyBtn" style="width:auto;margin:0;padding:0 14px;height:34px;">Уведомить команду</button>
+            </div>
+          </div>
+          <div id="schBody"></div>
+          <div class="schStatus" id="schSaveStatus"></div>
+        </div>
+      </section>
+
+    <!-- ── НАСТРОЙКИ ── -->
+<section class="page" id="settingsPage">
+  <div class="bigPanel">
+    <h2>Настройки</h2>
+
+    <div id="settingsTabs" style="display:flex;gap:8px;margin:18px 0 22px;flex-wrap:wrap;">
+      <button class="platformBtn active" data-stab="proxy">Прокси</button>
+      <button class="platformBtn" data-stab="prompts">Промты</button>
+      <button class="platformBtn" data-stab="team">Команда</button>
+    </div>
+
+    <!-- ── ПРОКСИ ── -->
+    <div class="settingsTab" data-stab="proxy" style="max-width:760px;">
+      <p class="hint" style="margin:0 0 16px;">Настройки прокси для каждой платформы. Изменения применяются сразу — без редеплоя сервера.</p>
+      <div id="proxyList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="proxySaveResult" style="margin-top:12px;font-size:13px;"></div>
+    </div>
+
+    <!-- ── ПРОМТЫ ── -->
+    <div class="settingsTab" data-stab="prompts" style="display:none;max-width:900px;">
+      <p class="hint" style="margin:0 0 16px;">
+        Системный промт для каждой платформы. Пустой блок не попадёт в промт; если пусты все — работает промт из кода воркера.
+        Подстановки: <code>{name}</code> <code>{age}</code> <code>{gender}</code>
+        <code>{location}</code> <code>{city}</code> <code>{persona}</code>
+        <code>{contacts}</code> <code>{trigger}</code> <code>{stop_topics}</code> —
+        берутся из карточки AI-менеджера. Воркер подхватит правку в течение минуты.
+      </p>
+      <div id="promptList" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <!-- ── КОМАНДА ── -->
+    <div class="settingsTab" data-stab="team" style="display:none;max-width:700px;">
+      <label>Email пользователя</label>
+      <input id="teamInviteEmail" placeholder="user@example.com" style="margin-top:6px;" />
+      <label style="margin-top:12px;">Роль</label>
+      <select id="teamInviteRole" class="aiSelect">
+        <option value="manager">Менеджер</option>
+        <option value="viewer">Наблюдатель</option>
+      </select>
+      <button class="taskRunBtn" id="teamInviteBtn" style="margin-top:16px;">Отправить приглашение</button>
+      <div class="result" id="teamInviteResult" style="margin-top:10px;"></div>
+
+      <div style="margin-top:30px;">
+        <h3>Участники команды</h3>
+        <div id="teamMembersList"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+    </main>
+
+    <!-- Шаблон старой карточки (для страницы Анкеты) -->
+    <template id="accountTemplate">
+      <article class="accountCard">
+        <div class="profilePhotoWrap">
+          <img class="profilePhoto" alt="" />
+          <div class="profileFallback">AI</div>
+        </div>
+        <div class="cardInfo">
+          <div class="cardTop">
+            <h3></h3>
+            <span class="badge">VALID</span>
+          </div>
+          <p class="url"></p>
+          <div class="meta">
+            <span class="checked"></span>
+            <span class="cookies"></span>
+            <span class="images"></span>
+          </div>
+          <div class="actions">
+            <button class="small openBtn">Открыть</button>
+            <button class="small danger deleteBtn">Удалить</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <!-- Шаблон квадратной карточки на главной -->
+    <style>
+      /* Сплит и скрещивание запускаются таймером — кнопки на карточке не нужны.
+         Прячем, а не удаляем: JS обращается к этим элементам. */
+      .sqSplitBtn, .sqChainBtn { display: none !important; }
+      .sqSplitControl:not(:has(.sqBroadcastBtn[style*="display: none"])) { justify-content: flex-start; }
+      .sqDeleteWrap { justify-content: flex-end; }
+    </style>
+
+    <style>
+      /* Сплит и скрещивание запускаются таймером — кнопки на карточке не нужны.
+         Прячем, а не удаляем: JS обращается к этим элементам. */
+      .sqSplitBtn, .sqChainBtn { display: none !important; }
+      .sqDeleteWrap { justify-content: flex-end; }
+    </style>
+    
+        <style>
+      .sqRunOpts{display:flex;flex-direction:column;gap:7px;margin-bottom:8px;
+                 padding:9px 10px;border-radius:var(--r);background:var(--card2);}
+      .sqOptRow{display:flex;align-items:center;gap:8px;}
+      .sqOptRow label{margin:0;padding:0;font:500 11.5px "Space Grotesk",sans-serif;
+                      color:var(--text2);text-transform:none;letter-spacing:0;
+                      text-shadow:none;cursor:pointer;flex:1;}
+      .sqOptRow input[type="checkbox"]{-webkit-appearance:none;appearance:none;
+                      width:34px;height:19px;flex:0 0 auto;margin:0;padding:0;
+                      border-radius:999px;background:rgba(255,255,255,.1);
+                      border:1px solid var(--border2);position:relative;cursor:pointer;
+                      transition:background .15s,border-color .15s;}
+      .sqOptRow input[type="checkbox"]::after{content:"";position:absolute;top:2px;left:2px;
+                      width:13px;height:13px;border-radius:50%;background:var(--text2);
+                      transition:transform .15s,background .15s;}
+      .sqOptRow input[type="checkbox"]:checked{background:rgba(46,224,138,.25);
+                      border-color:rgba(46,224,138,.6);}
+      .sqOptRow input[type="checkbox"]:checked::after{transform:translateX(15px);
+                      background:var(--green);}
+      .sqLimitRow{display:flex;align-items:center;gap:8px;}
+      .sqLimitRow span{font:500 11.5px "Space Grotesk",sans-serif;color:var(--text2);flex:1;}
+      .sqSplitInput{width:56px;flex:0 0 auto;}
+    </style>
+
+    <template id="squareCardTemplate">
+      <article class="sqCard" style="position:relative;">
+        <div class="sqConnectDot" title="Потяни чтобы соединить" style="position:absolute;top:50%;right:-10px;transform:translateY(-50%);width:16px;height:16px;border-radius:50%;background:var(--accent3);border:2px solid var(--bg);cursor:crosshair;z-index:10;box-shadow:0 0 8px rgba(16,245,168,0.6);"></div>
+        <div class="sqPhoto">
+          <img class="sqImg" alt="" />
+          <div class="sqFallback">AI</div>
+          <div class="sqOverlay"></div>
+          <div class="sqBadge">VALID</div>
+        </div>
+        <div class="sqBody">
+          <div class="sqName" style="cursor:pointer;" title="Нажми чтобы редактировать"></div>
+          <div class="sqStats">
+           <div class="sqStat">
+            <span class="sqStatVal sqLikesVal">0</span>
+            <span class="sqStatLabel">лайков</span>
+           </div>
+           <div class="sqDivider"></div>
+           <div class="sqStat">
+             <span class="sqStatVal sqMsgsVal">0</span>
+             <span class="sqStatLabel">ответов</span>
+           </div>
+           <div class="sqDivider"></div>
+           <div class="sqStat">
+             <span class="sqStatVal sqContactsVal">0</span>
+             <span class="sqStatLabel">лидов</span>
+           </div>
+         </div>
+         <div class="sqRunOpts">
+           <div class="sqLimitRow">
+             <span>Лайков за круг</span>
+             <input type="number" class="sqSplitInput sqLikesLimit" min="1" max="100" value="10" />
+           </div>
+           <div class="sqOptRow">
+             <label>Ставить лайки</label>
+             <input type="checkbox" class="sqDoLikes" checked />
+           </div>
+           <div class="sqOptRow">
+             <label>Отвечать в чатах</label>
+             <input type="checkbox" class="sqDoChats" checked />
+           </div>
+         </div>
+         <div class="sqSplitControl">
+           <button class="sqBtn sqSplitBtn">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+             Сплит
+           </button>
+           <button class="sqBtn sqBroadcastBtn" style="display:none;">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 12a8 8 0 0 1 8-8M4 12a8 8 0 0 0 8 8M20 12a8 8 0 0 0-8-8M20 12a8 8 0 0 1-8 8"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
+             Трансляция
+           </button>
+         </div>
+          <div class="sqResult"></div>
+          <div class="sqIntCityFields" style="display:none;flex-direction:column;gap:8px;margin-top:8px;">
+            <input class="sqIntCitySubject" placeholder="Тема письма" style="font-size:12px;" />
+            <textarea class="sqIntCityBody" placeholder="Текст письма..." style="font-size:12px;min-height:70px;resize:vertical;"></textarea>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:11px;color:var(--text2);">Страниц:</span>
+              <input class="sqIntCityPages" type="number" min="1" max="500" value="3" style="width:50px;font-size:12px;" />
+            </div>         
+          </div>
+          <div class="sqDeleteWrap">
+            <button class="sqChainBtn">⛓ Скрещивание</button>
+            <button class="sqDeleteBtn">Удалить анкету</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script>
+    (function() {
+      const layer = document.getElementById('authChatLayer');
+      if (!layer) return;
+
+      function randomBetween(min, max) { return min + Math.random() * (max - min); }
+
+      function spawnLogoFlash() {
+        const el = document.createElement('div');
+        el.className = 'authLogoFlash';
+        el.textContent = 'CLAW-AI';
+        el.style.visibility = 'hidden';
+        layer.appendChild(el);
+
+        // Сначала измеряем реальную ширину текста, чтобы не выйти за край экрана
+        const elWidth  = el.offsetWidth  || 160;
+        const elHeight = el.offsetHeight || 40;
+        const maxLeft = Math.max(window.innerWidth  - elWidth  - 12, 12);
+        const maxTop  = Math.max(window.innerHeight - elHeight - 12, 12);
+
+        el.style.left = randomBetween(12, maxLeft) + 'px';
+        el.style.top  = randomBetween(12, maxTop)  + 'px';
+        el.style.visibility = 'visible';
+
+        setTimeout(() => el.remove(), 3200);
+      }
+
+      setTimeout(spawnLogoFlash, 1500);
+      setInterval(spawnLogoFlash, 5000);
+    })();
+    </script>
+
+    <script>
+    (function() {
+      const canvas = document.getElementById('authCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let W = 0, H = 0;
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ── Слой 1: печатающийся код (упрощённая версия) ──
+      const codeSnippets = [
+        'const lead = await matchProfile(account);',
+        'if (lead.score > 0.8) sendLike(lead.id);',
+        'await groq.chat({ persona, message });',
+        'contacts.push({ name, telegram, ts: Date.now() });',
+        'session.token = createSession(user.id);',
+        'stats.liked++; stats.replied++;',
+        'export async function runLikes(limit) {',
+        '  for (let i = 0; i < limit; i++) await likeNext();',
+        '}',
+        'auth.verify(password, user.password_hash);',
+      ];
+      const FONT_SIZE = 12;
+      let codeCols = [];
+      function initCode() {
+        const colCount = Math.ceil(W / 460);
+        codeCols = [];
+        for (let i = 0; i < colCount; i++) {
+          codeCols.push({
+            x: (i / colCount) * W + Math.random() * 60 - 30,
+            y: -Math.random() * H,
+            speed: 0.16 + Math.random() * 0.18,
+            lineIndex: Math.floor(Math.random() * codeSnippets.length),
+            charIndex: 0,
+            opacity: 0.22 + Math.random() * 0.22,
+            displayLines: [],
+            tick: 0,
+            charDelay: Math.floor(Math.random() * 3) + 1,
+          });
+        }
+      }
+      initCode();
+      window.addEventListener('resize', initCode);
+
+      function drawCode() {
+        ctx.font = `300 ${FONT_SIZE}px "JetBrains Mono", monospace`;
+        for (const col of codeCols) {
+          col.tick++;
+          if (col.tick % col.charDelay === 0) {
+            const line = codeSnippets[col.lineIndex];
+            if (col.charIndex < line.length) {
+              col.charIndex++;
+              const partial = line.slice(0, col.charIndex);
+              if (col.displayLines.length === 0) col.displayLines.push(partial);
+              else col.displayLines[col.displayLines.length - 1] = partial;
+            } else {
+              col.charIndex = 0;
+              col.lineIndex = (col.lineIndex + 1) % codeSnippets.length;
+              col.displayLines.push('');
+              if (col.displayLines.length > 8) col.displayLines.shift();
+            }
+          }
+          col.y += col.speed;
+          if (col.y > H + 160) {
+            col.y = -80 - Math.random() * 200;
+            col.displayLines = [];
+            col.charIndex = 0;
+          }
+          let yDraw = col.y;
+          const total = col.displayLines.length;
+          col.displayLines.forEach((line, i) => {
+            const fade = (i + 1) / total;
+            ctx.fillStyle = `rgba(92,110,248,${col.opacity * fade})`;
+            ctx.fillText(line, col.x, yDraw);
+            yDraw += FONT_SIZE + 5;
+          });
+        }
+      }
+
+      // ── Слой 2: кардиограмма-пульс в перспективе ──
+      const pulseLines = [
+        { yRatio: 0.30, scale: 0.85, speed: 1.6, color: '34,211,238',  alpha: 0.45 },
+        { yRatio: 0.50, scale: 1.3,  speed: 2.1, color: '92,110,248',  alpha: 0.65 },
+        { yRatio: 0.70, scale: 1.7,  speed: 2.6, color: '16,245,168',  alpha: 0.40 },
+      ];
+      let pulseT = 0;
+
+      function pulseShape(x) {
+        // форма одного "удара" ЭКГ на повторяющемся периоде
+        const p = x % 220;
+        if (p > 90 && p < 100) return (p - 90) * -3.2;
+        if (p >= 100 && p < 106) return -32 + (p - 100) * 9.2;
+        if (p >= 106 && p < 112) return 23 - (p - 106) * 4.5;
+        if (p >= 112 && p < 118) return -4 + (p - 112) * 0.7;
+        return 0;
+      }
+
+      function drawPulse() {
+        pulseT += 1;
+        for (const line of pulseLines) {
+          const baseY = H * line.yRatio;
+          ctx.beginPath();
+          ctx.lineWidth = 2.2 * line.scale;
+          ctx.strokeStyle = `rgba(${line.color},${line.alpha})`;
+          ctx.shadowColor = `rgba(${line.color},${Math.min(line.alpha * 1.8, 1)})`;
+          ctx.shadowBlur = 14 * line.scale;
+          for (let x = 0; x <= W; x += 4) {
+            const shift = (x + pulseT * line.speed);
+            const y = baseY + pulseShape(shift) * line.scale;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, W, H);
+        drawCode();
+        drawPulse();
+        requestAnimationFrame(loop);
+      }
+      loop();
+    })();
+    </script>
+
+    <script>
+    (function() {
+      const layer = document.getElementById('authChatLayer');
+      if (!layer) return;
+
+      const dialogues = [
+        ["Привет! Как дела? 😊", "Отлично! А у тебя?"],
+        ["Чем занимаешься?", "Просто скроллю ленту, а ты?"],
+        ["Какие планы на вечер?", "Пока никаких, есть идеи?"],
+        ["Ты из какого города?", "Из Москвы, а ты?"],
+        ["Понравилось твоё фото 👍", "Спасибо! Очень приятно"],
+        ["Может, познакомимся ближе?", "Давай, мне интересно"],
+        ["Что больше любишь — кино или прогулки?", "Прогулки, особенно вечером"],
+        ["Хочешь обменяться контактами?", "Конечно, пиши в телеграм"],
+      ];
+
+      function randomBetween(min, max) { return min + Math.random() * (max - min); }
+
+      function spawnDialogue() {
+        const [msgIn, msgOut] = dialogues[Math.floor(Math.random() * dialogues.length)];
+        const top = randomBetween(8, 78); // % от высоты
+        const leftIn  = randomBetween(4, 30);
+        const leftOut = randomBetween(58, 86);
+
+        const bubbleIn = document.createElement('div');
+        bubbleIn.className = 'authBubble in';
+        bubbleIn.textContent = msgIn;
+        bubbleIn.style.top  = top + '%';
+        bubbleIn.style.left = leftIn + '%';
+        layer.appendChild(bubbleIn);
+
+        setTimeout(() => {
+          const bubbleOut = document.createElement('div');
+          bubbleOut.className = 'authBubble out';
+          bubbleOut.textContent = msgOut;
+          bubbleOut.style.top  = (top + randomBetween(6, 10)) + '%';
+          bubbleOut.style.left = leftOut + '%';
+          layer.appendChild(bubbleOut);
+          setTimeout(() => bubbleOut.remove(), 4500);
+        }, 900);
+
+        setTimeout(() => bubbleIn.remove(), 4500);
+      }
+
+      spawnDialogue();
+      setInterval(spawnDialogue, 3200);
+    })();
+    </script>
+
+    <!-- Шаблон карточки аналитика -->
+<template id="analyticsCardTemplate">
+  <div class="analyticsCard">
+    <div class="analyticsCardHead">
+      <div>
+        <div class="analyticsCardName"></div>
+        <div class="analyticsCardAccount"></div>
+      </div>
+      <button class="analyticsCardDelete">✕</button>
+    </div>
+    <div class="analyticsCardBody">
+      <div class="analyticsCardRow"><span class="analyticsLabel">Контакт</span><span class="analyticsVal analyticsContact"></span></div>
+      <div class="analyticsCardRow"><span class="analyticsLabel">Стиль</span><span class="analyticsVal analyticsPersona"></span></div>
+      <div class="analyticsCardRow"><span class="analyticsLabel">Цель</span><span class="analyticsVal analyticsGoal"></span></div>
+    </div>
+    <button class="analyticsEditBtn">Редактировать</button>
+  </div>
+</template>
+
+
+  <!-- Модалка создания/редактирования аналитика -->
+<div class="modalBackdrop" id="analyticsModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modalHead">
+      <span>Настройки аналитика</span>
+      <button class="modalClose" id="analyticsModalClose">✕</button>
+    </div>
+    <div class="modalBody" style="gap:0;max-height:70vh;overflow-y:auto;overscroll-behavior:contain;">
+      <label style="display:none;">Анкета
+        <select id="aModalAccountSelect" class="aiSelect" style="margin-top:6px;"></select>
+      </label>
+      <label style="display:none;">Groq API ключи (каждый на новой строке)
+        <textarea id="aModalGroqKey" 
+          placeholder="gsk_ключ1...&#10;gsk_ключ2...&#10;gsk_ключ3..." 
+          rows="4"
+          style="min-height:80px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);"></textarea>
+      </label>
+      <label style="display:none;">Модель
+        <input id="aModalGroqModel" value="llama-3.3-70b-versatile" />
+      </label>
+      <label style="display:none;">OpenRouter API ключ (fallback)
+        <textarea id="aModalGeminiKeys" 
+          placeholder="sk-or-v1-..." 
+          rows="2"
+          style="min-height:50px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);"></textarea>
+      </label>
+      <label>Имя
+       <input id="aModalBotName" placeholder="Например: Анна" />
+      </label>
+      <label>Возраст
+       <input id="aModalBotAge" placeholder="Например: 24" />
+      </label>
+      <label>Пол
+       <select id="aModalBotGender" class="aiSelect" style="margin-top:6px;">
+        <option value="female">Девушка</option>
+        <option value="male">Парень</option>
+       </select>
+      </label>
+      <label>Местоположение (город, район/улица)
+       <input id="aModalLocation" placeholder="Например: Москва, ул. Радужная 5" />
+      </label>
+      <label style="display:none;">Личность / стиль
+        <textarea id="aModalPersona" placeholder="Игривая, уверенная..." style="min-height:60px;"></textarea>
+      </label>
+      <label style="display:none;">Цель диалога
+        <textarea id="aModalGoal" placeholder="Цель: вовлечь в переписку..." style="min-height:60px;"></textarea>
+      </label>
+      <label style="display:none;">Стоп-темы
+        <input id="aModalStopTopics" placeholder="деньги, фото интимное..." />
+      </label>
+      <label>Контакты
+        <input id="aModalContacts" placeholder="Telegram: @username..." />
+      </label>
+      <label style="display:none;">Условие отдачи контактов
+        <input id="aModalContactsTrigger" />
+      </label>
+      <label style="display:none;">Telegram chat_id для уведомлений
+        <input id="aModalTgChatId" placeholder="Например: 123456789" />
+      </label>
+      <button class="taskRunBtn" id="aModalSaveBtn" style="margin-top:16px;">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="notificationsModal">
+  <div class="modal">
+
+    <div class="modalHead">
+      <span>Уведомления</span>
+      <button
+        class="modalClose"
+        id="notificationsModalClose"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div
+      class="modalBody"
+      id="notificationsList"
+    >
+    </div>
+
+  </div>
+</div>
+
+<!-- Модалка скрещивания -->
+<div class="modalBackdrop" id="chainModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modalHead">
+      <span id="chainModalTitle">Цепочка резервов</span>
+      <button class="modalClose" id="chainModalClose">✕</button>
+    </div>
+    <div class="modalBody">
+      <p class="hint" style="margin-top:0;">Если эта анкета заблокируется — следующая в цепочке автоматически встанет на её место и запустит сплит.</p>
+      <div id="chainModalList" style="margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="tmCreateModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modalHead">
+      <span id="tmCreateTitle">Новый чат</span>
+      <button class="modalClose" id="tmCreateClose">✕</button>
+    </div>
+    <div class="modalBody">
+      <label id="tmTitleWrap">Название группы
+        <input id="tmGroupTitle" placeholder="Например: Операторы" style="margin-top:6px;" />
+      </label>
+      <div style="margin-top:14px;">
+        <div style="font:700 11px 'Inter',sans-serif;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:8px;" id="tmPickLabel">Кого добавить</div>
+        <input id="tmPeopleSearch" placeholder="Поиск по имени или почте..." style="margin-bottom:10px;" />
+        <div id="tmPeopleList" style="max-height:260px;overflow-y:auto;"></div>
+      </div>
+      <button class="taskRunBtn" id="tmCreateSend" style="margin-top:14px;">Создать</button>
+      <div class="result" id="tmCreateResult" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="planInviteModal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modalHead">
+      <span>Добавить сотрудника</span>
+      <button class="modalClose" id="planInviteClose">✕</button>
+    </div>
+    <div class="modalBody">
+      <label>Email сотрудника
+        <input id="planInviteEmail" placeholder="user@example.com" style="margin-top:6px;" />
+      </label>
+      <label style="margin-top:12px;">Роль
+        <select id="planInviteRole" class="aiSelect" style="margin-top:6px;">
+          <option value="manager">Менеджер</option>
+          <option value="viewer">Наблюдатель</option>
+        </select>
+      </label>
+      <p class="hint">Человек должен быть уже зарегистрирован. Приглашение придёт ему на колокольчик.</p>
+      <button class="taskRunBtn" id="planInviteSend" style="margin-top:14px;">Отправить приглашение</button>
+      <div class="result" id="planInviteResult" style="margin-top:8px;"></div>
+      <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font:700 11px 'Inter',sans-serif;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px;">В команде</div>
+        <div id="planTeamList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="planTaskModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modalHead">
+      <span id="planModalTitle">Новая задача</span>
+      <button class="modalClose" id="planModalClose">✕</button>
+    </div>
+    <div class="modalBody" style="max-height:74vh;overflow-y:auto;">
+      <label>Название
+        <input id="planTitle" placeholder="Что нужно сделать" style="margin-top:6px;" />
+      </label>
+      <label style="margin-top:12px;">Описание
+        <textarea id="planDesc" placeholder="Подробности, ссылки, детали..." style="margin-top:6px;min-height:80px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);"></textarea>
+      </label>
+      <label style="margin-top:12px;">Исполнитель
+        <select id="planAssignee" class="aiSelect" style="margin-top:6px;"></select>
+      </label>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <label style="flex:1;">Приоритет
+          <select id="planPriority" class="aiSelect" style="margin-top:6px;">
+            <option value="low">Низкий</option>
+            <option value="normal" selected>Обычный</option>
+            <option value="high">Высокий</option>
+          </select>
+        </label>
+        <label style="flex:1;">Срок
+          <input id="planDue" type="date" style="margin-top:6px;" />
+        </label>
+      </div>
+      <button class="taskRunBtn" id="planSaveBtn" style="margin-top:16px;">Сохранить</button>
+      <div class="result" id="planSaveResult" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modalBackdrop" id="planCommentsModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modalHead">
+      <span id="planCommentsTitle">Комментарии</span>
+      <button class="modalClose" id="planCommentsClose">✕</button>
+    </div>
+    <div class="modalBody">
+      <div id="planCommentsList" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <input id="planCommentInput" placeholder="Написать комментарий..." style="flex:1;" />
+        <button class="btnMainSm" id="planCommentSend">Отправить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./app.js"></script>
+
+<!-- Правая панель ключей -->
+<div id="keysPanelToggle" style="position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:9999;background:#fff;border-radius:11px 0 0 11px;padding:17px 11px;cursor:pointer;writing-mode:vertical-rl;font:800 12px 'Inter',sans-serif;color:#000;letter-spacing:0.14em;box-shadow:-5px 0 22px rgba(255,255,255,0.22);user-select:none;">
+  КЛЮЧИ
+</div>
+
+<div id="keysPanel" style="position:fixed;right:-340px;top:0;height:100vh;width:320px;z-index:9998;background:var(--card);border-left:1px solid var(--border2);box-shadow:-20px 0 60px rgba(0,0,0,.7);transition:right 0.3s ease;display:flex;flex-direction:column;overflow:hidden;">
+
+  <!-- Список слотов -->
+  <div id="keysPanelMain" style="display:flex;flex-direction:column;height:100%;padding:20px;transition:transform 0.3s ease,opacity 0.3s ease;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font:700 13px 'Orbitron',sans-serif;color:var(--text);letter-spacing:0.08em;">СЛОТЫ КЛЮЧЕЙ</span>
+      <button id="addKeySlotBtn" style="background:#fff;border:none;border-radius:8px;color:#000;font:800 15px 'Inter',sans-serif;padding:3px 13px;cursor:pointer;">+</button>
+    </div>
+    <div id="keySlotsBody" style="flex:1;overflow-y:auto;"></div>
+  </div>
+
+  <!-- Форма создания/редактирования слота — выезжает поверх -->
+  <div id="keySlotForm" style="position:absolute;inset:0;background:var(--card);padding:20px;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s ease;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <span style="font:800 13px 'Inter',sans-serif;color:var(--white);letter-spacing:0.09em;">СЛОТ КЛЮЧЕЙ</span>
+      <button id="keySlotModalClose" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;">✕</button>
+    </div>
+    <label style="margin-bottom:14px;">Название
+      <input id="keySlotName" placeholder="Например: Пачка 1" style="margin-top:6px;width:100%;" />
+    </label>
+    <label style="flex:1;display:flex;flex-direction:column;">Ключи (каждый на новой строке)
+      <textarea id="keySlotKeys" placeholder="gsk_ключ1...&#10;gsk_ключ2...&#10;sk-or-v1-..." style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);flex:1;resize:none;"></textarea>
+    </label>
+    <button class="taskRunBtn" id="keySlotSaveBtn" style="margin-top:14px;">Сохранить</button>
+  </div>
+
+</div>
+
+
+  </body>
+</html>
