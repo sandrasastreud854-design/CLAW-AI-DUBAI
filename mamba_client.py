@@ -791,9 +791,11 @@ def get_profile_photo(cookies: dict) -> Optional[str]:
 
 # Города, с которыми работаем. Пустой список — отвечаем всем.
 MAMBA_CITIES = [
-    "москва", "москве", "мск", "moscow", "msk", "московск",
-    "санкт-петербург", "санкт петербург", "петербург", "спб", "питер",
-    "saint petersburg", "st petersburg", "saint-petersburg", "ленинградск",
+    "dubai", "дубай",
+    "abu dhabi", "abu-dhabi", "абу-даби", "абу даби",
+    "sharjah", "шарджа",
+    "ajman", "аджман",
+    "uae", "u.a.e", "united arab", "оаэ", "эмират",
 ]
 # Город не нашли: False — отвечаем, True — пропускаем.
 MAMBA_SKIP_UNKNOWN_CITY = False
@@ -1004,17 +1006,16 @@ def task_get_all_chats_with_history(cookies: dict, max_chats: int = 30) -> list[
 
 # Первое сообщение новому мэтчу. Mamba банит за одинаковые сообщения пачкой,
 # поэтому собираем опенер из случайных кусков — каждый раз уникальная строка.
-_OPEN_HELLO = ["привет", "приветик", "прив", "хай", "здравствуй", "хеллоу", "приветствую", "доброго"]
-_OPEN_MID = ["", "как ты", "как настроение", "как делишки", "как сам", "чем занят", "как денёк"]
+_OPEN_HELLO = ["hi", "hey", "hello", "hiya", "heyy", "hi there", "good day"]
+_OPEN_MID = ["", "how are you", "how's it going", "how's your day", "what are you up to"]
 _OPEN_TAIL = [
-    "рассматриваешь встречи?",
-    "встречи интересуют?",
-    "как относишься к встречам?",
-    "не против познакомиться поближе?",
-    "ищешь кого-то для встреч?",
-    "какие планы на ближайшее?",
-    "расскажешь немного о себе?",
-    "чем по жизни занимаешься?",
+    "are you open to meeting up?",
+    "looking to meet someone?",
+    "how do you feel about meeting?",
+    "want to get to know each other?",
+    "any plans for the coming days?",
+    "tell me a bit about yourself?",
+    "what are you into?",
 ]
 _OPEN_EMO = ["", ")", "))", " :)", "", ""]
 
