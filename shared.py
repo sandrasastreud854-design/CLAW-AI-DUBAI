@@ -21,8 +21,8 @@ from text_style import is_styled_char, restore_styled, strip_style
 
 # ── Supabase ──────────────────────────────────────────────
 
-SUPABASE_URL = "https://gtiqksoxcaotocalqfhe.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFrc294Y2FvdG9jYWxxZmhlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzY4ODczMiwiZXhwIjoyMTA5MjY0NzMyfQ.C_3U9s-tnDGNEEDVoUpaZVnqf8eQzmpxHr5CtIWJhvs"
+SUPABASE_URL = "https://cfystxxxafopwqpfdumw.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmeXN0eHh4YWZvcHdxcGZkdW13Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzcxNTIzMywiZXhwIjoyMTA5MjkxMjMzfQ.99zv4GQnhGNGe0pzR_MiaFtFJz7YEg1pTX0_fZc9kjc"
 
 _supabase_http_client = httpx.Client(http2=False, timeout=30.0)
 supabase: Client = create_client(
@@ -31,8 +31,8 @@ supabase: Client = create_client(
     options=ClientOptions(httpx_client=_supabase_http_client),
 )
 
-LEADS_SUPABASE_URL = "https://gtiqksoxcaotocalqfhe.supabase.co"
-LEADS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFrc294Y2FvdG9jYWxxZmhlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzY4ODczMiwiZXhwIjoyMTA5MjY0NzMyfQ.C_3U9s-tnDGNEEDVoUpaZVnqf8eQzmpxHr5CtIWJhvs"
+LEADS_SUPABASE_URL = "https://cfystxxxafopwqpfdumw.supabase.co"
+LEADS_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNmeXN0eHh4YWZvcHdxcGZkdW13Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MzcxNTIzMywiZXhwIjoyMTA5MjkxMjMzfQ.99zv4GQnhGNGe0pzR_MiaFtFJz7YEg1pTX0_fZc9kjc"
 
 _leads_http_client = httpx.Client(http2=False, timeout=30.0)
 leads_supabase: Client = create_client(
@@ -41,7 +41,7 @@ leads_supabase: Client = create_client(
     options=ClientOptions(httpx_client=_leads_http_client),
 )
 
-TELEGRAM_BOT_TOKEN = "8743731775:AAE3jy3zZOTaM8rYXie7LHmgfXduV9IY06g"
+TELEGRAM_BOT_TOKEN = ""
 ACCESS_CODE = "VIPDATYNG3906"
 
 # ── Paths ─────────────────────────────────────────────────
