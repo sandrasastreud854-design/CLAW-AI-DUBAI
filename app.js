@@ -7262,6 +7262,14 @@ teamInviteBtn?.addEventListener(
 const PROXY_PLATFORMS = [
   { id: "mamba",       label: "Mamba / Love Mail" },
   { id: "twinby",      label: "Twinby" },
+  { id: "happn",       label: "Happn" },
+  { id: "tantan",      label: "Tan-Tan" },
+  { id: "meff",        label: "Meff" },
+  { id: "juamo",       label: "Juamo" },
+  { id: "seeking",     label: "Seeking" },
+  { id: "tinder",      label: "Tinder" },
+  { id: "bumble",      label: "Bumble" },
+  { id: "badoo",       label: "Badoo" },
 ];
 
 async function loadProxySettings() {
@@ -9557,6 +9565,14 @@ document.addEventListener("click", (e) => {
 const PROMPT_PLATFORMS = [
   { id: "mamba",   label: "Mamba"   },
   { id: "twinby",  label: "Twinby"  },
+  { id: "happn",   label: "Happn"   },
+  { id: "tantan",  label: "Tan-Tan" },
+  { id: "meff",    label: "Meff"    },
+  { id: "juamo",   label: "Juamo"   },
+  { id: "seeking", label: "Seeking" },
+  { id: "tinder",  label: "Tinder"  },
+  { id: "bumble",  label: "Bumble"  },
+  { id: "badoo",   label: "Badoo"   },
 ];
 
 // Порядок блоков = порядок, в котором они склеиваются в промт для модели
@@ -10884,7 +10900,7 @@ function initChatPage() {
 })();
 
 // ── Реестр почт ───────────────────────────────────────────
-const ML_PLATFORMS = ["Mamba","Twinby"];
+const ML_PLATFORMS = ["Mamba","Twinby","Happn","TanTan","Meff","Juamo","Seeking","Tinder","Bumble","Badoo"];
 const ML_STATUSES = [["free","свободна"],["in_work","в работе"],
                      ["blocked","заблокирована"],["dead","мёртвая"]];
 const ML_COLORS = { free:"#64748b", in_work:"#10f5a8", blocked:"#fb7185", dead:"#f43f5e" };
