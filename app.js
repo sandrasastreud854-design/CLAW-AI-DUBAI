@@ -12554,6 +12554,81 @@ document.addEventListener("blur", e => {
 mtCheck();
 setInterval(mtCheck, 30000);
 
+// ── Режим редактора: платформы «в разработке» ──────────────
+let devState = { dev_platforms: [], is_admin: false };
+let editorMode = false;
+try { editorMode = localStorage.getItem("editorMode") === "1"; } catch {}
+
+function devApplyTabs() {
+  document.querySelectorAll('.platformBtn[data-platform]').forEach(btn => {
+    const p = btn.dataset.platform;
+    const inDev = devState.dev_platforms.includes(p);
+    btn.classList.toggle("platformDev", inDev);
+    let badge = btn.querySelector(".devBadge");
+    if (inDev && !badge) {
+      badge = document.createElement("span");
+      badge.className = "devBadge";
+      badge.textContent = "в разработке";
+      btn.appendChild(badge);
+    } else if (!inDev && badge) {
+      badge.remove();
+    }
+    btn.classList.toggle("editorPick", editorMode && devState.is_admin);
+  });
+}
+
+async function devCheck() {
+  try {
+    const d = await ctJson("/api/dev-platforms");
+    devState = d;
+    if (!d.is_admin) editorMode = false;
+    devApplyTabs();
+    const t = document.getElementById("edToggle");
+    const s = document.getElementById("edState");
+    if (t) t.checked = editorMode;
+    if (s) s.textContent = editorMode ? "Режим редактора включён" : "Режим редактора выключен";
+  } catch {}
+}
+
+async function devSave() {
+  try {
+    await ctJson("/api/dev-platforms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dev_platforms: devState.dev_platforms }),
+    });
+  } catch (e) {
+    alert("Не сохранилось: " + e.message);
+  }
+}
+
+document.addEventListener("change", e => {
+  if (e.target.id === "edToggle") {
+    editorMode = !!e.target.checked;
+    try { localStorage.setItem("editorMode", editorMode ? "1" : "0"); } catch {}
+    const s = document.getElementById("edState");
+    if (s) s.textContent = editorMode ? "Режим редактора включён" : "Режим редактора выключен";
+    devApplyTabs();
+  }
+});
+
+document.addEventListener("click", e => {
+  if (!editorMode || !devState.is_admin) return;
+  const btn = e.target.closest('.platformBtn[data-platform]');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const p = btn.dataset.platform;
+  const i = devState.dev_platforms.indexOf(p);
+  if (i >= 0) devState.dev_platforms.splice(i, 1);
+  else devState.dev_platforms.push(p);
+  devApplyTabs();
+  devSave();
+}, true);
+
+devCheck();
+setInterval(devCheck, 30000);
+
 async function cbLoad() {
   const box = document.getElementById("cbTable");
   if (!box) return;
