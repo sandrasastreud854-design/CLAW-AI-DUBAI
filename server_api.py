@@ -1287,6 +1287,35 @@ def api_maintenance_set(payload: MaintenancePayload, authorization: str | None =
     return {"ok": True}
 
 
+class DevPlatformsPayload(BaseModel):
+    dev_platforms: list[str] = []
+
+
+@app.get("/api/dev-platforms")
+def api_dev_platforms_get(authorization: str | None = Header(default=None)):
+    session = require_auth(authorization)
+    is_admin = (session["email"] or "").lower() in ADMIN_EMAILS
+    try:
+        row = (supabase.table("site_settings").select("*").eq("id", 1)
+               .limit(1).execute().data or [{}])[0]
+    except Exception as e:
+        print(f"[DEVPF] не прочиталось: {e}", flush=True)
+        row = {}
+    return {"ok": True, "dev_platforms": row.get("dev_platforms") or [], "is_admin": is_admin}
+
+
+@app.post("/api/dev-platforms")
+def api_dev_platforms_set(payload: DevPlatformsPayload, authorization: str | None = Header(default=None)):
+    require_admin(authorization)
+    supabase.table("site_settings").upsert({
+        "id": 1,
+        "dev_platforms": payload.dev_platforms or [],
+        "updated_at": datetime.utcnow().isoformat(),
+    }, on_conflict="id").execute()
+    print(f"[DEVPF] платформы в разработке: {payload.dev_platforms}", flush=True)
+    return {"ok": True}
+
+
 @app.get("/api/tg-pool")
 def api_tg_pool(date: str = "", shift: str = "day", authorization: str | None = Header(default=None)):
     session = require_auth(authorization)
