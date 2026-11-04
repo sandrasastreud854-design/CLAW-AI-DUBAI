@@ -520,11 +520,28 @@ def like_user(cookies: dict, photo_id: str) -> dict:
     print(f"[LIKE] graphql vote response={json.dumps(result3, ensure_ascii=False)[:500]}", flush=True)
     return result3
 
+GRAPHQL_EVENTS_QUERY = "query Events($limit: Int!, $cursor: Cursor) {\n  my {\n    id\n    hitList {\n      isOnboardingRequired\n      hitCounters(period: MONTH) {\n        all\n      }\n      hits(period: MONTH, limit: $limit, group: ALL, after: $cursor) {\n        pageInfo {\n          endCursor\n          hasNextPage\n        }\n        nodes {\n          author {\n            encryptedId\n            profile {\n              id\n              name\n              age\n              gender\n              hasMatch\n              photos {\n                default {\n                  id\n                  urls {\n                    square\n                    squareSmall\n                    squareLarge\n                  }\n                  voteable\n                  voted\n                  liked\n                }\n              }\n              relations {\n                contact {\n                  favorite\n                }\n              }\n              online {\n                status\n              }\n              verification {\n                verifiedPhotos\n              }\n              incognito\n            }\n          }\n          type\n          text\n          lastHitHumanDate\n          lastHit\n          new\n          count\n          invisible\n        }\n      }\n    }\n    encounters {\n      voting {\n        limits {\n          dailyLimit\n          numberOfVotesMade\n        }\n      }\n    }\n  }\n}"
+
+
+def get_hitlist(cookies: dict, limit: int = 30, cursor: str = None) -> dict:
+    """События: кто лайкнул/смотрел анкету. Отсюда берём кого лайкать в ответ."""
+    path = f"{API_GRAPHQL}?_loc[locale]=en"
+    variables = {"limit": limit}
+    if cursor:
+        variables["cursor"] = cursor
+    payload = json.dumps({
+        "operationName": "Events",
+        "query": GRAPHQL_EVENTS_QUERY,
+        "variables": variables,
+    }, ensure_ascii=False)
+    return _request("POST", path, cookies, body=payload)
+
+
 def task_likes_http(cookies: dict, limit: int = 20, log_fn=None) -> dict:
     """
-    Поставить лайки через HTTP без Playwright.
-    1. Получаем анкеты через get_rating (GraphQL)
-    2. Ставим лайк каждой через like_user (REST)
+    Лайк в ответ тем, кто уже лайкнул/смотрел анкету (события hitList).
+    1. Берём события через get_hitlist (GraphQL)
+    2. Ставим лайк каждому ещё не оцененному через like_user (REST)
     """
     status_check = detect_account_status(cookies)
     if status_check["status"] == "blocked":
@@ -535,20 +552,30 @@ def task_likes_http(cookies: dict, limit: int = 20, log_fn=None) -> dict:
     errors  = 0
     forbidden = 0        # сколько лайков отклонено с HTTP 403
 
-    # Mamba отдаёт анкеты порциями и часто меньше, чем просили.
-    # Добираем по курсору offsetPhotoId, пока не наберём лимит.
+    # Лайкаем в ответ тех, кто уже лайкнул/смотрел анкету (события hitList).
+    # Берём только ещё не оцененных нами (voted=false) с рабочим фото.
     photos = []
-    _offset = None
+    _cursor = None
     for _page in range(6):
-        _resp = get_rating(cookies, limit=min(limit - len(photos), 30), offset_photo_id=_offset)
-        _queue = _resp.get("data", {}).get("photoRating", {}).get("queue", {}) or {}
-        _batch = _queue.get("photos") or []
-        if not _batch:
-            print(f"[LIKES] Рейтинг вернул пусто. Ответ: {json.dumps(_resp, ensure_ascii=False)[:400]}", flush=True)
-            break
-        photos.extend(_batch)
-        _offset = _queue.get("offsetPhotoId")
-        if not _offset or len(photos) >= limit:
+        _resp = get_hitlist(cookies, limit=30, cursor=_cursor)
+        _hits = (_resp.get("data", {}).get("my", {}).get("hitList", {})
+                 .get("hits", {}) or {})
+        _nodes = _hits.get("nodes") or []
+        if not _nodes and _page == 0:
+            print(f"[LIKES] События пусты. Ответ: {json.dumps(_resp, ensure_ascii=False)[:400]}", flush=True)
+        for _n in _nodes:
+            _prof = ((_n.get("author") or {}).get("profile") or {})
+            _def = ((_prof.get("photos") or {}).get("default") or {})
+            _pid = _def.get("id")
+            if not _pid or not _def.get("voteable") or _def.get("voted"):
+                continue
+            photos.append({"photo": {"photoId": _pid},
+                           "photoOwner": {"name": _prof.get("name") or _pid}})
+            if len(photos) >= limit:
+                break
+        _pginfo = _hits.get("pageInfo") or {}
+        _cursor = _pginfo.get("endCursor")
+        if len(photos) >= limit or not _pginfo.get("hasNextPage") or not _cursor:
             break
         time.sleep(random.uniform(0.8, 1.6))
     photos = photos[:limit]
