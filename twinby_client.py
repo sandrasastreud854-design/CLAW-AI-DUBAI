@@ -581,37 +581,35 @@ def iter_chats_with_history(token: str, max_chats: int = 30):
             "last_role": history[-1]["role"],
         }
 
-# Ниже этой суммы контакт не отдаём — лид не наш.
-MIN_PRICE = 15000
+# Below this amount we don't give the contact — not our lead.
+MIN_PRICE = 500   # ← поставь свой минимум в валюте Дубая (AED/USD)
 
 _INSULT_RE = re.compile(
-    r"очко|анал|шлюх|шалав|прост[ие]тут|давалк|подстилк|"
-    r"сперм|дроч|трах|ебат|ебал|ебуч|ебл|бля[дт]|пизд|ху[йеё]|мраз|тварь|уродин",
+    r"whore|slut|bitch|hooker|prostitute|cunt|dick|cock|fuck|suck|jerk off|ugly",
     re.IGNORECASE,
 )
-_BRUSH_OFF = ["теряйся", "иди лесом", "фу, теряйся"]
+_BRUSH_OFF = ["get lost", "bye then", "ew, get lost"]
 
 _BOT_ACCUSE_RE = re.compile(
-    r"(?<![а-яёa-z])бот(?![а-яёa-z])|ботяра|нейросет|нейронк|робот|"
-    r"(?<![а-яёa-z])ии(?![а-яёa-z])|скрипт",
+    r"(?<![a-z])bot(?![a-z])|a\.?i\.?(?![a-z])|robot|neural|script|chatgpt|gpt|fake|automated",
     re.IGNORECASE,
 )
 _BOT_REPLY = [
-    "ок ок, как скажешь, теряйся тогда",
-    "ок, как скажешь, теряйся",
-    "ага, бот. теряйся тогда",
+    "ok ok, whatever you say, bye then",
+    "ok, as you wish, bye",
+    "yeah, a bot. bye then",
 ]
 _RELATIONSHIP_RE = re.compile(
-    r"серь[её]зн\w*\s*отношени|для\s*отношений|создать\s*семь|семейн|замуж|"
-    r"вторую\s*половин|спутниц|(?<![а-яё])любов[ьи](?![а-яё])",
+    r"serious relationship|relationship|looking for love|get married|marriage|"
+    r"start a family|soulmate|(?<![a-z])love(?![a-z])",
     re.IGNORECASE,
 )
 _RELATIONSHIP_REPLY = [
-    "отношения не ищу, только встречи",
-    "я не по отношениям, только встречи",
-    "серьёзного не ищу, только встречи",
+    "not looking for a relationship, just meetups",
+    "i'm not into relationships, only meetups",
+    "nothing serious, just meetups",
 ]
-_NO_MATCH = "ну тогда не по пути, удачи"
+_NO_MATCH = "guess we're not a match then, good luck"
 _CLOSERS = _BRUSH_OFF + _BOT_REPLY + [_NO_MATCH]
 
 
@@ -620,16 +618,14 @@ def _offered_amount(text: str) -> int:
     t = (text or "").lower()
     if not re.search(r"\d", t):
         return 0
-    if re.search(r"\d+\s*(лет|года|год|см|кг|часов|час|мин|:\d)", t):
+    if re.search(r"\d+\s*(years?|yo|y/?o|cm|kg|hours?|hrs?|min|am|pm|:\d)", t):
         return 0
     vals = []
-    for m in re.finditer(r"(\d{1,6})\s*(к|k|тыс|т\.?р)?", t):
+    for m in re.finditer(r"(\d{1,6})\s*(k|thousand)?", t):
         num = int(m.group(1))
         if m.group(2):
             num *= 1000
-        elif num < 1000:
-            num *= 1000
-        if 1000 <= num <= 1_000_000:
+        if 100 <= num <= 1_000_000:
             vals.append(num)
     return max(vals) if vals else 0
 
@@ -709,10 +705,10 @@ def task_auto_reply_http(
                 # Вопрос про встречи за мп задаётся отдельным сообщением ПОСЛЕ ответа
                 # собеседника (см. force_ask_meeting в task_auto_reply_http ниже).
                 _greetings = [
-                    "приветик, встретимся ?",
-                    "привет, встречи рассматриваешь ?",
-                    "привет, какие планы на сегодня ?",
-                    "привет, встретиться не хочешь ?",
+                    "hey, wanna meet up?",
+                    "hi, open to meetups?",
+                    "hey, any plans for today?",
+                    "hi, feel like meeting up?",
                 ]
                 _acc_id = settings.get("_account_id", "default")
                 _idx_path = Path(__file__).resolve().parent / "data" / f"greeting_index_twinby_{_acc_id}.json"
@@ -865,11 +861,11 @@ def task_auto_reply_http(
         _sup_name = (name or "").lower()
         _sup_txt = " ".join((m.get("content") or "") for m in history).lower()
         _sup_markers = (
-            "команда twinby", "twinby team", "поддержк", "support",
-            "администрац", "модерац", "служба заботы", "техподдержк",
+            "twinby team", "support", "moderation", "admin",
+            "customer care", "help center", "official",
         )
         if (
-            _sup_name in ("twinby", "twinby team", "поддержка", "support", "администрация")
+            _sup_name in ("twinby", "twinby team", "support", "admin", "moderation")
             or "twinby" in _sup_name
             or any(_w in _sup_txt for _w in _sup_markers)
         ):
@@ -938,26 +934,26 @@ def task_auto_reply_http(
         if force_ask_meeting:
             turn_system_prompt = (
                 system_prompt
-                + "\n\nВАЖНО: собеседник только что ответил на твоё приветствие. В этом ответе "
-                + "НЕ здоровайся снова, НЕ упоминай Telegram и не давай контакт — сразу спроси "
-                + "про встречи за мп, выбери один из вариантов (не копируй дословно, перефразируй "
-                + "в своём стиле, коротко, строчными буквами): 'рассматриваешь встречи за мп ?', "
-                + "'встречи за мп рассматриваешь ?', 'какие планы на вечер ? рассматриваешь встречи за мп ?', "
-                + "'встречаюсь за мп, если интересно — продолжим общение ?'."
+                + "\n\nIMPORTANT: the user just replied to your greeting. In this reply "
+                + "do NOT greet again, do NOT mention Telegram and do NOT give the contact — just ask "
+                + "about meetups for a gift, pick one (don't copy word for word, rephrase "
+                + "in your own style, short, lowercase): 'do you consider meetups for a gift?', "
+                + "'open to meetups for support?', 'any plans tonight? open to a paid meetup?', "
+                + "'i do meetups for a gift, interested in continuing?'."
             )
             print(f"[TWINBY AUTO-REPLY] {name} (chat {chat_id}): 2-е сообщение — форсирую вопрос про встречи за мп через Groq", flush=True)
         elif force_telegram:
             turn_system_prompt = (
                 system_prompt
-                + "\n\nВАЖНО: собеседник только что ответил на вопрос про встречи за мп (согласием, "
-                + "интересом или уточняющим вопросом). В этом ответе предложи ему перейти в Telegram, "
-                + f"обязательно укажи ник {contacts} прямо в тексте. "
-                + "Пиши так, как реально пишут в переписке на сайтах знакомств: живо, коротко, "
-                + "строчными буквами, без формальностей вроде 'кстати' или двоеточий перед ником. "
-                + "Пример тона (не копируй дословно, придумай свою формулировку в этом же духе): "
-                + f"'давай лучше в телеге, вот мой ник {contacts} а то тут редко захожу' или "
-                + f"'сюда редко захожу, погнали в тг {contacts}'. "
-                + "Никаких точек в конце, никакого 'Telegram:' — просто ник в тексте."
+                + "\n\nIMPORTANT: the user just replied to the question about paid meetups (with agreement, "
+                + "interest or a clarifying question). In this reply suggest moving to Telegram, "
+                + f"and you MUST put the username {contacts} right in the text. "
+                + "Write like people really text on dating apps: lively, short, "
+                + "lowercase, no formalities. "
+                + "Tone example (don't copy word for word, make your own in the same spirit): "
+                + f"'let's move to telegram, my username is {contacts}, i'm rarely here' or "
+                + f"'i barely check this app, let's go to tg {contacts}'. "
+                + "No period at the end, no 'Telegram:' label — just the username in the text."
             )
             print(f"[TWINBY AUTO-REPLY] {name} (chat {chat_id}): 3-е сообщение — форсирую приглашение в Telegram через Groq", flush=True)
         else:
@@ -990,106 +986,105 @@ def task_auto_reply_http(
             skipped += 1
             continue
 
-        if re.search(r"\b[A-Za-z]{2,}\s+[A-Za-z]{2,}\b", reply):
-            _log(f"{name}: английский текст — не отправляю ({reply[:60]!r})")
+        if re.search(r"(?<![a-zA-Z])[а-яёА-ЯЁ]{2,}\s+[а-яёА-ЯЁ]{2,}", reply):
+            _log(f"{name}: russian text — skipping ({reply[:60]!r})")
             skipped += 1
             continue
 
-        # Модель процитировала промт по-русски — в чат такое не уходит
-        _bad_ru = False
+        # Модель процитировала промт — в чат такое не уходит
+        _bad = False
         if len(reply) > 200:
-            _bad_ru = True
-        elif re.search(r"[А-ЯЁ]{4,}", reply):
-            _bad_ru = True
+            _bad = True
+        elif re.search(r"[A-Z]{4,}", reply):
+            _bad = True
         elif re.match(r"^\s*\d+\s*[.)]\s", reply):
-            _bad_ru = True
+            _bad = True
         else:
             _lc = reply.lower()
-            for _w in ("правило", "случай а", "случай б", "вариант ответа",
-                       "промт", "инструкц", "запрещено", "обязана",
-                       "нужно ответить", "нужно убе", "ответ должен",
-                       "не здоровайся", "в этом случае", "первый ответ",
-                       "выбрать один из", "предложенных вариантов",
-                       "не копируй", "перефразируй", "так что отвечу"):
+            for _w in ("rule", "case a", "case b", "option", "the prompt",
+                       "instruction", "forbidden", "you must", "you should",
+                       "the reply must", "do not greet", "in this case",
+                       "first reply", "choose one of", "the options",
+                       "do not copy", "paraphrase", "rephrase",
+                       "system prompt", "as an ai", "language model"):
                 if _w in _lc:
-                    _bad_ru = True
+                    _bad = True
                     break
-        if _bad_ru:
-            _log(f"{name}: кусок промта — не отправляю ({reply[:80]!r})")
+        if _bad:
+            _log(f"{name}: prompt leak — skipping ({reply[:80]!r})")
             skipped += 1
             continue
 
         if force_telegram and contacts and contacts.lower() not in reply.lower():
             fallback_phrases = [
-                f"давай лучше в телеге, вот мой ник {contacts} а то тут редко захожу",
-                f"сюда редко захожу, погнали в тг {contacts}",
-                f"тут неудобно, го в телегу {contacts}",
+                f"let's move to telegram, my username is {contacts}, i'm rarely here",
+                f"i barely check this app, let's go to tg {contacts}",
+                f"this app is inconvenient, let's hop to telegram {contacts}",
             ]
             reply = random.choice(fallback_phrases)
 
         # Названа сумма — решаем детерминированно, модели цифры не доверяем.
         _amount = _offered_amount(_last_in)
         _wants_tg = bool(re.search(
-            r"(давай|дай|дашь|скинь|кинь|кинешь|оставь|оставишь|пришли|напиши|скажи)\s+"
-            r"(мне\s+|свой\s+)?(тг|телег|телеграм|telegram|ник|юзер|username)|"
-            r"^\s*(тг|телега|телеграм|ник|юзер)\s*[?!.]*\s*$", _last_in))
+            r"(give|send|drop|share|text|tell|whats|what'?s)\s+"
+            r"(me\s+|your\s+)?(tg|telegram|insta|whatsapp|username|handle|contact|nick)|"
+            r"^\s*(tg|telegram|username|handle|contact)\s*[?!.]*\s*$", _last_in))
         _forced_contact = False
         if _amount and _amount < MIN_PRICE:
-            _log(f"{name}: предложил {_amount} — ниже минимума, контакт не даю")
-            reply = "мне столько не подходит"
+            _log(f"{name}: offered {_amount} — below minimum, no contact")
+            reply = "that doesn't work for me"
         elif _amount >= MIN_PRICE:
-            _log(f"{name}: предложил {_amount} — подходит, отдаю контакт")
+            _log(f"{name}: offered {_amount} — ok, giving contact")
             if already_has_contact:
-                reply = "давай там, жду"
+                reply = "sure, waiting for you there"
             else:
-                reply = "да, подходит, давай в тг"
+                reply = "yeah that works, let's go to tg"
                 if contacts:
                     reply += "\n" + contacts
                     _forced_contact = True
-        # Прямо просит контакт — кидаем только ник, без вступления.
+        # Asks for the contact directly — send only the username, no intro.
         elif _wants_tg and contacts:
-            _log(f"{name}: просит контакт — отдаю ник без вступления")
+            _log(f"{name}: asks for contact — username only")
             reply = contacts
             _forced_contact = True
-        # Спрашивает цену — первый раз перекидываем вопрос ему.
-        elif re.search(r"скольк[оа]\s*(ты\s*)?(хочешь|берешь|берёшь|просишь|стоит)|"
-                       r"какая сумма|какой прайс|что по деньгам|"
-                       r"^\s*(а\s+|ну\s+)?скольк[оа]\s*[?!.)]*\s*$", _last_in):
+        # Asks about price — first time bounce it back.
+        elif re.search(r"how much\s*(do you|u)?\s*(want|charge|cost|ask)|"
+                       r"what'?s the price|what'?s your price|what about money|"
+                       r"^\s*how much\s*[?!.)]*\s*$", _last_in):
             _asked_back = any(
-                "рассчитыва" in (m.get("content") or "").lower()
+                "what do you have in mind" in (m.get("content") or "").lower()
                 for m in history if m.get("role") == "assistant"
             )
             if not _asked_back:
-                _log(f"{name}: спрашивает цену — перекидываю вопрос обратно")
+                _log(f"{name}: asks price — bounce back")
                 reply = random.choice([
-                    "та не много, а ты на сколько рассчитываешь?",
-                    "не много, а ты на какую сумму рассчитываешь?",
+                    "not much, what do you have in mind?",
+                    "it's reasonable, what amount do you have in mind?",
                 ])
             else:
-                _log(f"{name}: второй раз про цену — увожу в тг")
-                reply = "тут это не обсуждаю, давай в тг"
+                _log(f"{name}: price again — move to tg")
+                reply = "i don't discuss that here, let's go to tg"
                 if contacts:
                     reply += "\n" + contacts
                     _forced_contact = True
-        # МП / табу / услуги — перечислять нельзя, за это банят анкету.
-        elif re.search(r"табу|каки[ем]\s*услуг|что вход|по классик|"
-                       r"как(ое|ая)\s*мп|что\s*по\s*мп|мп\s*как(ое|ая)|"
-                       r"скольк[оа]\s*мп(?![а-яё])", _last_in):
-            _log(f"{name}: вопрос про мп/табу — безопасная фраза")
-            reply = "тут такое не обсуждаю, чтоб не забанили, а так можем у тебя встретиться"
+        # Services / taboo — can't list them, account gets banned for it.
+        elif re.search(r"taboo|what services|what'?s included|what do you do|"
+                       r"what'?s the deal|how much for", _last_in):
+            _log(f"{name}: asks services/taboo — safe phrase")
+            reply = "i don't discuss that here so i don't get banned, but we can meet at your place"
             if contacts and not already_has_contact:
-                reply += "\nостальное лучше в тг " + contacts
+                reply += "\nthe rest is better in tg " + contacts
 
         # Прощание на горячий вопрос (цена / встреча / условия) = слитый лид.
-        if re.search(r"скольк|сумм|\bцен|услови|прайс|что по ч[ёе]м|за скольк|встреч|встрет",
+        if re.search(r"how much|amount|price|terms|rate|meet|meetup|see you|hook up",
                      _last_in) and \
-           re.search(r"не по пути|удачи|всего доброго|прощай|пока\b", reply.lower()):
-            _log(f"{name}: прощание на горячий вопрос — подменяю")
-            if re.search(r"встреч|встрет|увидим", _last_in) and \
-               not re.search(r"скольк|сумм|\bцен|прайс|услови", _last_in):
-                reply = "да, не против, когда именно?"
+           re.search(r"not a match|good luck|take care|bye|farewell", reply.lower()):
+            _log(f"{name}: farewell on a hot question — replacing")
+            if re.search(r"meet|meetup|see you|hook up", _last_in) and \
+               not re.search(r"how much|amount|price|terms", _last_in):
+                reply = "yeah i'm down, when exactly?"
             else:
-                reply = "у тебя или у меня, мне без разницы"
+                reply = "your place or mine, i don't mind"
                 if contacts:
                     reply += "\n" + contacts
 
@@ -1109,13 +1104,13 @@ def task_auto_reply_http(
             continue
 
         if any(t in reply.lower() for t in (
-                "всё спокойно", "все спокойно", "как проходит", "рада знакомству",
-                "звучит заманчиво", "звучит интригующе", "звучит неплохо",
-                "уточню детали", "уточни детали", "подходящий день", "своим чередом",
-                "обстоят дела", "держи позитив", "всё будет хорошо",
-                "как прошёл день", "как прошел день", "интересное предложение")) or \
-                reply.strip().lower().rstrip(".") in ("понимаю", "ясно", "хорошо", "бывает"):
-            _log(f"{name}: книжный оборот — пропускаю круг ({reply[:60]!r})")
+                "nice to meet you", "pleasure to meet", "how is your day",
+                "sounds tempting", "sounds intriguing", "sounds good to me",
+                "let me clarify", "i'll clarify the details", "a suitable day",
+                "how are things going", "stay positive", "everything will be fine",
+                "how was your day", "interesting offer", "interesting proposal")) or \
+                reply.strip().lower().rstrip(".") in ("i understand", "i see", "okay", "it happens"):
+            _log(f"{name}: canned phrase — skipping round ({reply[:60]!r})")
             skipped += 1
             continue
 
