@@ -54,7 +54,7 @@ from shared import (
 
 # ── URL воркер-серверов ───────────────────────────────────
 # Замени на реальные URL после деплоя на Render
-MAMBA_SERVER_URL      = "https://mamba-server-gpn5.onrender.com"
+MAMBA_SERVER_URL      = "https://mamba-server-51b4.onrender.com"
 LOVELAZ_SERVER_URL    = "https://lovelaz-server-2.onrender.com"
 TWINBY_SERVER_URL     = "https://twinby-server-41ag.onrender.com"
 VZNAKOMSTVE_SERVER_URL = "https://vznakomstve-server-b1r4.onrender.com"
