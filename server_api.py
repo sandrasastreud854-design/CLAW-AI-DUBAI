@@ -56,7 +56,7 @@ from shared import (
 # Замени на реальные URL после деплоя на Render
 MAMBA_SERVER_URL      = "https://mamba-server-gpn5.onrender.com"
 LOVELAZ_SERVER_URL    = "https://lovelaz-server-2.onrender.com"
-TWINBY_SERVER_URL     = "https://twynb-server.onrender.com"
+TWINBY_SERVER_URL     = "https://twinby-server-41ag.onrender.com"
 VZNAKOMSTVE_SERVER_URL = "https://vznakomstve-server-b1r4.onrender.com"
 OPERATOR_SERVER_URL   = "https://operator-server-py.onrender.com"
 ATOLIN_SERVER_URL     = "https://atolin-server.onrender.com"
