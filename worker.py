@@ -2157,7 +2157,7 @@ async def process_job(job: dict):
                             else:
                                 _label = f"проверка чатов, подход {next_payload.get('chat_round', 1)}"
 
-                            _gap = random.uniform(60, 150) if next_type not in ("likes", "likes-http") else random.uniform(240, 480)
+                            _gap = random.uniform(8, 12) if next_type not in ("likes", "likes-http") else random.uniform(50, 70)
                             await asyncio.sleep(_gap)
                             supabase.table("job_queue").insert({
                                 "account_id": account_id,
